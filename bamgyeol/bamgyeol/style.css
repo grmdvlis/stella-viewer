@@ -39,12 +39,23 @@
 .viewer-bottom.custom-controls{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;column-gap:12px}
 .custom-controls #time{grid-column:3;grid-row:1}
 .custom-controls .hint{grid-column:2;grid-row:1;justify-self:center}
+.viewer-bottom{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;column-gap:12px}
+.viewer-bottom .hint{grid-column:2;grid-row:1;justify-self:center;min-width:0;max-width:100%}
+.viewer-bottom #time,.viewer-bottom #sensors{grid-column:3;grid-row:1}
+#time[hidden],#sensors[hidden]{display:none!important}
 dialog form,dialog label,dialog input,dialog button{min-width:0;max-width:100%}
 dialog input{width:100%}
 dialog .row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
 dialog .row:has(#seoul){grid-template-columns:repeat(3,minmax(0,1fr))}
 dialog .row button{padding:12px 8px;white-space:normal;overflow-wrap:anywhere}
 dialog .primary{width:100%;white-space:normal}
+dialog #modal-content,dialog form,dialog .row{min-inline-size:0;max-inline-size:100%;inline-size:100%}
+dialog .coordinate-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+dialog .coordinate-row label{min-inline-size:0;max-inline-size:100%}
+dialog .location-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+dialog input,dialog select,dialog textarea{box-sizing:border-box;inline-size:100%;min-inline-size:0;max-inline-size:100%}
+dialog input[type=number]{appearance:none;-webkit-appearance:none}
+dialog h2:focus{outline:none}
 .location #date{white-space:nowrap}
 .round{display:grid;place-items:center}
 .round svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;transform:translateY(-1px)}
