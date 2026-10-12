@@ -1,7 +1,7 @@
 export function formatViewTime(date,custom=false){
   const parts=new Intl.DateTimeFormat('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:true}).formatToParts(date);
   const p=type=>parts.find(x=>x.type===type)?.value;
-  return `${custom?'지정 · ':''}${p('month')}. ${p('day')}. ${p('dayPeriod')} ${p('hour')}:${p('minute')}`;
+  return `${p('month')}. ${p('day')}. ${p('dayPeriod')} ${p('hour')}:${p('minute')}`;
 }
 export function cityName(data){return (data.city||'도시명 확인 불가').replace(/(특별자치시|특별시|광역시|시|군)$/,'')}
 function insideRing(x,y,ring){

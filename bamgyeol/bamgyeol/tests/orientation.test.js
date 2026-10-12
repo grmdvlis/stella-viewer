@@ -47,7 +47,7 @@ test('hint counts back-and-forth travel instead of endpoint displacement',()=>{
   assert.equal(hint.observe(q(0),3020).hidden,true);
 });
 test('compact Korean timestamp and city names',()=>{
-  const date=new Date(2026,9,12,13,5);assert.equal(formatViewTime(date),'10. 12. 오후 01:05');assert.equal(formatViewTime(date,true),'지정 · 10. 12. 오후 01:05');
+  const date=new Date(2026,9,12,13,5);assert.equal(formatViewTime(date),'10. 12. 오후 01:05');assert.equal(formatViewTime(date,true),'10. 12. 오후 01:05');
   assert.equal(cityName({city:'서울특별시'}),'서울');assert.equal(cityName({city:'광명시'}),'광명');assert.equal(cityName({city:'가평군'}),'가평');
 });
 test('offline city boundaries distinguish Seoul, Gwangmyeong and Gapyeong',()=>{

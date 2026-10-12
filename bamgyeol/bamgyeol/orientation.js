@@ -1,4 +1,4 @@
-import {cameraPose,directionAngles} from './astro.js';
+import {cameraPose,directionAngles} from './astro.js?v=0.5.1';
 
 // Quaternions preserve the complete camera frame across zenith, nadir and
 // equivalent Euler representations. [right, up, -forward] is a proper rotation.

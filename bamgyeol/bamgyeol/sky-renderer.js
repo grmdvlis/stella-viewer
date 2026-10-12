@@ -1,6 +1,6 @@
-import { horizontal, project } from './astro.js';
-import { AIM_RADIUS, MOBILE_FOV, DESKTOP_FOV, HORIZON_WIDTH, shouldDisplayStar, closestTarget } from './sky-model.js';
-import { createPlanetCache, SOLAR_SYSTEM, planetDisplaySize } from './planets.js';
+import { horizontal, project } from './astro.js?v=0.5.1';
+import { AIM_RADIUS, MOBILE_FOV, DESKTOP_FOV, HORIZON_WIDTH, shouldDisplayStar, closestTarget } from './sky-model.js?v=0.5.1';
+import { createPlanetCache, SOLAR_SYSTEM, planetDisplaySize } from './planets.js?v=0.5.1';
 
 export function createSkyRenderer(ctx) {
   const getPlanets = createPlanetCache();
