@@ -1,6 +1,9 @@
-import { horizontal, project } from './astro.js?v=0.5.2';
-import { AIM_RADIUS, MOBILE_FOV, DESKTOP_FOV, HORIZON_WIDTH, shouldDisplayStar, closestTarget } from './sky-model.js?v=0.5.2';
-import { createPlanetCache, SOLAR_SYSTEM, planetDisplaySize } from './planets.js?v=0.5.2';
+import { horizontal, project } from './astro.js?v=0.6.0';
+import { AIM_RADIUS, MOBILE_FOV, DESKTOP_FOV, HORIZON_WIDTH, shouldDisplayStar, closestTarget } from './sky-model.js?v=0.6.0';
+import { createPlanetCache, SOLAR_SYSTEM, planetDisplaySize } from './planets.js?v=0.6.0';
+
+import {DEEP_SKY,starDetails,eclipticPoint} from './sky-details.js?v=0.6.0';
+const ecliptic=Array.from({length:181},(_,i)=>eclipticPoint(i*2));
 
 export function createSkyRenderer(ctx) {
   const getPlanets = createPlanetCache();
@@ -54,7 +57,7 @@ export function createSkyRenderer(ctx) {
       }
       ctx.fillStyle = `rgba(235,241,255,${Math.max(.22, 1 - magnitude * .1)})`;
       ctx.beginPath(); ctx.arc(p.x, p.y, radius, 0, Math.PI * 2); ctx.fill();
-      if (s.named) targets.push({ ...s.named, ...p, kind: 'star' });
+      if (s.named) targets.push({ ...starDetails(s), ...p, ...coordinates.get(s.geometry.coordinates.join(',')) });
     }
 
     // Keep the same constellation hit radius as the visible aiming circle.
@@ -108,6 +111,33 @@ export function createSkyRenderer(ctx) {
       if (inView(p, 30)) ctx.fillText(direction, p.x, p.y + 24);
     });
 
+    ctx.save();
+    ctx.strokeStyle='#dfbf778c';ctx.lineWidth=1.3;ctx.setLineDash([5,6]);
+    ctx.beginPath();
+    let last=null, label=null;
+    for(const point of ecliptic){
+      const p=pos(point);
+      if(inView(p,35)){
+        if(last)ctx.lineTo(p.x,p.y);else ctx.moveTo(p.x,p.y);
+        if(!label && p.x>36 && p.x<width-36 && p.y>130 && p.y<height-130)label=p;
+        last=p;
+      }else last=null;
+    }
+    ctx.stroke();ctx.setLineDash([]);
+    if(label){ctx.fillStyle='#e1c58b';ctx.font='11px sans-serif';ctx.fillText('황도',label.x,label.y-8)}
+    for(const o of DEEP_SKY){
+      const point=[o.ra,o.dec],p=pos(point);
+      if(!inView(p))continue;
+      ctx.strokeStyle='#b7a5dfb0';ctx.lineWidth=1;
+      ctx.beginPath();
+      if(o.kind==='galaxy')ctx.ellipse(p.x,p.y,7,3,-.5,0,Math.PI*2);
+      else if(o.kind==='cluster'){ctx.setLineDash([2,2]);ctx.arc(p.x,p.y,6,0,Math.PI*2)}
+      else if(o.kind==='blackHole'){ctx.moveTo(p.x,p.y-6);ctx.lineTo(p.x+6,p.y);ctx.lineTo(p.x,p.y+6);ctx.lineTo(p.x-6,p.y);ctx.closePath()}
+      else ctx.rect(p.x-4,p.y-4,8,8);
+      ctx.stroke();ctx.setLineDash([]);
+      targets.push({...o,...p,...coordinates.get(point.join(','))});
+    }
+    ctx.restore();
     const planets = getPlanets(time, lat, lon).flatMap(planet => {
       const p = project(planet.az, planet.alt, az, alt, width, height, fov, fit, cameraBasis);
       return inView(p, 40) ? [{ ...planet, ...p, kind: 'planet' }] : [];

@@ -71,3 +71,47 @@ dialog h2:focus{outline:none}
   .identified h1{font-size:20px;flex-wrap:wrap;gap:2px 7px}
   .identified h1 small{font-size:9px}
 }
+#object-info,#constellation-actions{pointer-events:auto;display:inline-grid;place-items:center;flex:none;min-width:30px;height:30px;padding:0;border-radius:50%;font:700 13px system-ui;color:var(--green);background:#142537}
+#object-label{align-items:center}
+#object-english{flex-basis:100%}
+dialog.wide-details{width:720px}
+.sky-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.sky-facts div,.constellation-members article{padding:12px;border:1px solid #9ab5d225;border-radius:12px;background:#0a142488}
+.sky-facts dt,.constellation-members small{color:#a4b4c8;font-size:12px}
+.sky-facts dd{margin:5px 0 0}
+#modal h2 small{font-size:.62em;color:var(--green)}
+.constellation-figure{position:relative;display:grid;place-items:center;isolation:isolate;background:radial-gradient(ellipse,#263650,#080f20);border-radius:16px;height:clamp(160px,32dvh,300px);overflow:hidden}
+.constellation-figure span{position:absolute;z-index:-1;font-size:clamp(100px,23dvh,210px);filter:grayscale(1);opacity:.23;line-height:1}
+.constellation-figure svg{height:92%;max-width:100%;stroke:#c0e7db;stroke-width:.7;fill:#e8fff9}
+.constellation-members{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:8px}
+.constellation-members article{display:grid;gap:6px}
+#object-info:focus-visible,#constellation-actions:focus-visible,#wish-board button:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+#wish-board{display:flex;flex-direction:column;max-width:860px;min-height:100%;margin:auto;gap:10px}
+.wish-heading,.wish-card header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.wish-heading h1{font-size:clamp(19px,4vw,32px);margin:4px 0}
+.wish-heading small,.wish-card small,.wish-note{color:#a6b5cb;font-size:11px}
+.wish-heading button{padding:8px 10px;white-space:nowrap}
+.wish-garland,.wish-card{touch-action:pan-y}
+.wish-garland{position:relative;display:grid;grid-template-columns:repeat(9,minmax(0,1fr));align-items:center;min-height:68px;user-select:none}
+.wish-garland:before{content:'';position:absolute;inset:2px 0 24px;border-bottom:1px solid #b9c8de6b;border-radius:0 0 50% 50%;pointer-events:none}
+.wish-garland button{z-index:1;padding:0;height:48px;border:0;background:none;color:#b8d8dc;transform:translateY(calc(8px - var(--step)*3px))}
+.wish-garland span{font-size:calc(30px - var(--step)*4px);opacity:calc(1 - var(--step)*.14)}
+.wish-garland button[aria-pressed=true]{color:#e3fff3;text-shadow:0 0 18px #b4e8d1,0 0 30px #b4e8d1}
+.wish-card{position:relative;display:flex;flex-direction:column;flex:1;min-height:clamp(270px,48dvh,560px);border:1px solid #7890af65;border-radius:24px;padding:clamp(14px,4vw,34px);background:#121e31;box-shadow:0 10px 40px #0004}
+.wish-card:before{content:'';position:absolute;top:-8px;left:calc(50% - 7px);width:14px;height:14px;transform:rotate(45deg);background:#121e31;border:solid #7890af65;border-width:1px 0 0 1px}
+.wish-card h2{font-size:clamp(17px,3vw,24px);margin:4px 0}
+.wish-content{flex:1;padding:16px 0;overflow-wrap:anywhere}
+.wish-content p{line-height:1.8;white-space:pre-wrap}
+.wish-profile{display:flex;align-items:center;gap:9px}
+.wish-avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#263b50;color:var(--green);overflow:hidden}
+.wish-avatar img{width:100%;height:100%;object-fit:cover}
+.wish-card footer{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:10px;align-items:center}
+.wish-card footer button:not([data-action=vote]){width:44px;height:44px;padding:0;border-radius:50%}
+.wish-card button:disabled{opacity:.42}
+.wish-card [data-action=vote]{display:grid;gap:3px;justify-self:center;width:min(100%,240px);color:#d5f2e7;padding:8px}
+.wish-card [data-action=vote][aria-pressed=true]{background:#234d43;border-color:#99d8ba}
+.wish-card [data-action=vote] strong{font-size:25px}
+.wish-note{margin:0;text-align:center}
+#wish-form textarea{resize:vertical;color:inherit;background:#0a1424;border:1px solid #7089a66b;border-radius:10px;padding:10px;font:inherit}
+#wishes{overflow-y:auto;overscroll-behavior:contain;padding:0 3px 8px;scrollbar-width:thin}
+@media(max-height:690px){.wish-card{min-height:235px}.wish-content{padding:8px 0}}

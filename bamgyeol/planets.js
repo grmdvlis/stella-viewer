@@ -1,4 +1,4 @@
-import { Equator, Horizon, Observer } from './vendor/astronomy.js?v=0.5.2';
+import { Equator, Horizon, Observer, Illumination } from './vendor/astronomy.js?v=0.6.0';
 
 export const PLANETS = [
   { body: 'Mercury', name: '수성', en: 'Mercury', color: '#aaa9a5' },
@@ -23,7 +23,7 @@ export function planetPositions(date, latitude, longitude) {
   return SOLAR_SYSTEM.map(planet => {
     const equ = Equator(planet.body, date, observer, true, true);
     const hor = Horizon(date, observer, equ.ra, equ.dec);
-    return { ...planet, az: hor.azimuth, alt: hor.altitude };
+    return { ...planet, az: hor.azimuth, alt: hor.altitude, ra:equ.ra*15, dec:equ.dec, au:equ.dist, mag:Illumination(planet.body,date).mag };
   });
 }
 
