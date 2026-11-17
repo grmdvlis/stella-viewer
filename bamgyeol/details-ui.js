@@ -1,6 +1,6 @@
-import {KIND,raLabel,distanceLabel,outlineStars} from './sky-details.js?v=0.6.5';
-import {stories} from './constellation-guide.js?v=0.6.5';
-import {artURL} from './constellation-art.js?v=0.6.5';
+import {KIND,raLabel,distanceLabel,outlineStars} from './sky-details.js?v=0.6.6';
+import {stories} from './constellation-guide.js?v=0.6.6';
+import {artURL} from './constellation-art.js?v=0.6.6';
 
 export function objectInfo(o){
   const angle=n=>Number.isFinite(n)?n.toFixed(2)+'°':'자료 없음';
@@ -25,9 +25,10 @@ export function constellationInfo(c, stars, diagram, names, art){
   const brightest=magnitudes.length?Math.min(...magnitudes).toFixed(2)+' 등급':'자료 없음';
   return `<h2>${c.name} <small>${c.en}</small></h2>
     <p class="constellation-story">${stories[c.id]||''}</p>
-    <p class="constellation-brightest">가장 밝은 연결별 · ${brightest}</p>
     <div class="constellation-comparison"><figure><figcaption>별과 연결선</figcaption><div class="constellation-panel">${diagram}</div></figure><figure><figcaption>별자리 그림</figcaption><div class="constellation-panel">${art?`<img src="${artURL(art)}" alt="${c.name} 그림" decoding="async">`:'그림 준비 중'}</div></figure></div>
     <p>연결선은 별자리를 그리는 여러 방식 중 하나예요. 밝기 등급은 숫자가 작을수록 밝아요.</p>
     <h3>연결선에 있는 별 · ${members.length}개</h3>
-    <div class="constellation-members">${members.map(o=>`<article><strong>${o.name}${o.en?' · '+o.en:''}</strong><small>적경 ${raLabel(o.ra)} · 적위 ${o.dec.toFixed(2)}°</small><small>거리 ${distanceLabel(o)} · 밝기 ${Number.isFinite(o.mag)?o.mag.toFixed(2)+' 등급':'자료 없음'}</small></article>`).join('')}</div>`;
+    <p class="constellation-brightest">가장 밝은 연결별 · ${brightest}</p>
+    <div class="constellation-members">${members.map(o=>`<article><strong>${o.name}${o.en?' · '+o.en:''}</strong><small>적경 ${raLabel(o.ra)} · 적위 ${o.dec.toFixed(2)}°</small><small>${Number.isFinite(o.lightYears)||Number.isFinite(o.au)?'거리 '+distanceLabel(o)+' · ':''}밝기 ${Number.isFinite(o.mag)?o.mag.toFixed(2)+' 등급':'자료 없음'}</small></article>`).join('')}</div>
+    <p>거리 정보가 없는 별은 밝기 정보만 나타냈어요.</p>`;
 }

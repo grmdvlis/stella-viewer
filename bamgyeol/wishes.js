@@ -1,4 +1,4 @@
-import {DEFAULT_NICKNAME} from './constellation-guide.js?v=0.6.5';
+import {DEFAULT_NICKNAME} from './constellation-guide.js?v=0.6.6';
 const SAMPLES = {
   Cas:[{id:'cas-1',author:'새벽별',text:'좋아하는 일을 오래, 내 속도로 할 수 있기를.',count:0},{id:'cas-2',author:'하늘산책',text:'오랜만에 만나는 친구와 저녁 산책을 할 수 있기를.',count:0}],
   Ori:[{id:'ori-1',author:'겨울빛',text:'내일의 나에게 오늘보다 조금 더 다정할 수 있기를.',count:0}],

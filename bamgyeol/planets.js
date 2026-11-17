@@ -1,4 +1,4 @@
-import { Equator, Horizon, Observer, Illumination } from './vendor/astronomy.js?v=0.6.5';
+import { Equator, Horizon, Observer, Illumination } from './vendor/astronomy.js?v=0.6.6';
 
 export const PLANETS = [
   { body: 'Mercury', name: '수성', en: 'Mercury', color: '#aaa9a5' },
