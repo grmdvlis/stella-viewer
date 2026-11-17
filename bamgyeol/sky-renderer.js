@@ -1,9 +1,10 @@
-import { horizontal, project } from './astro.js?v=0.6.6';
-import { AIM_RADIUS, MOBILE_FOV, DESKTOP_FOV, HORIZON_WIDTH, shouldDisplayStar, closestTarget } from './sky-model.js?v=0.6.6';
-import { createPlanetCache, SOLAR_SYSTEM, planetDisplaySize } from './planets.js?v=0.6.6';
+import { horizontal, project } from './astro.js?v=0.6.7';
+import { AIM_RADIUS, MOBILE_FOV, DESKTOP_FOV, HORIZON_WIDTH, shouldDisplayStar, closestTarget } from './sky-model.js?v=0.6.7';
+import { createPlanetCache, SOLAR_SYSTEM, planetDisplaySize } from './planets.js?v=0.6.7';
 
-import {DEEP_SKY,starDetails,eclipticPoint} from './sky-details.js?v=0.6.6';
-import {createArtLayer} from './constellation-art.js?v=0.6.6';
+import {DEEP_SKY,starDetails,eclipticPoint} from './sky-details.js?v=0.6.7';
+import {createArtLayer} from './constellation-art.js?v=0.6.7';
+import {zoomFov,constellationCenter,guideDirection,guideEndpoint} from './viewer-navigation.js?v=0.6.7';
 const ecliptic=Array.from({length:181},(_,i)=>eclipticPoint(i*2));
 
 export function createSkyRenderer(ctx) {
@@ -16,8 +17,8 @@ export function createSkyRenderer(ctx) {
   }));
   let horizonKey = '', coordinates = new Map();
 
-  return ({ width, height, az, alt, lat, lon, time, stars, constellations, mobile, faint, deepSky=true, cameraBasis=null, artwork=true, artCatalog={} }) => {
-    const fov = mobile ? MOBILE_FOV : DESKTOP_FOV;
+  return ({ width, height, az, alt, lat, lon, time, stars, constellations, mobile, faint, deepSky=true, cameraBasis=null, artwork=true, artCatalog={},zoomLevel=0,searchTarget=null }) => {
+    const fov = zoomFov(mobile ? MOBILE_FOV : DESKTOP_FOV,zoomLevel);
     const fit = mobile ? 'long' : 'short';
     const key = `${Math.floor(time.getTime() / 60000)}:${lat}:${lon}`;
     if (key !== horizonKey) { coordinates = new Map(); horizonKey = key; }
@@ -85,7 +86,7 @@ export function createSkyRenderer(ctx) {
     }
 
     if (active) {
-      ctx.strokeStyle = '#bce8d6a0'; ctx.lineWidth = 1;
+      ctx.strokeStyle = active.id===searchTarget?.id?'#f2d374':'#bce8d6a0'; ctx.lineWidth = 1;
       for (const line of active.lines) {
         ctx.beginPath(); let previous = null;
         for (const point of line) {
@@ -95,6 +96,24 @@ export function createSkyRenderer(ctx) {
         }
         ctx.stroke();
       }
+    }
+
+    if(searchTarget){
+      ctx.save();ctx.strokeStyle='#f2d374';ctx.lineWidth=1.6;
+      for(const line of searchTarget.lines){
+        ctx.beginPath();let previous=null;
+        for(const point of line){const p=pos(point);if(p){if(previous&&Math.hypot(p.x-previous.x,p.y-previous.y)<Math.max(width,height)*2)ctx.lineTo(p.x,p.y);else ctx.moveTo(p.x,p.y);}previous=p;}
+        ctx.stroke();
+      }
+      const center=constellationCenter(searchTarget),h=horizontal(center.ra,center.dec,lat,lon,time),p=pos([center.ra,center.dec]);
+      const inside=p&&p.x>35&&p.x<width-35&&p.y>80&&p.y<height-140;
+      const end=inside?p:guideEndpoint(guideDirection(h,az,alt,cameraBasis),width,height);
+      ctx.strokeStyle='#ee7a80';ctx.lineWidth=1.5;ctx.setLineDash([5,7]);ctx.beginPath();ctx.moveTo(width/2,height/2);ctx.lineTo(end.x,end.y);ctx.stroke();ctx.setLineDash([]);
+      if(!inside){
+        const a=Math.atan2(end.y-height/2,end.x-width/2);ctx.beginPath();ctx.moveTo(end.x-10*Math.cos(a-.5),end.y-10*Math.sin(a-.5));ctx.lineTo(end.x,end.y);ctx.lineTo(end.x-10*Math.cos(a+.5),end.y-10*Math.sin(a+.5));ctx.stroke();
+      }
+      ctx.fillStyle='#f2d374';ctx.font='12px sans-serif';ctx.textAlign='center';
+      ctx.fillText(searchTarget.name+(h.alt<0?' · 지평선 아래':''),Math.max(145,Math.min(width-100,end.x)),end.y-14);ctx.restore();
     }
 
     // The red horizon uses the same projection/FOV as stars and planets.

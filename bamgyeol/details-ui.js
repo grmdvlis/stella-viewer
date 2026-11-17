@@ -1,6 +1,6 @@
-import {KIND,raLabel,distanceLabel,outlineStars} from './sky-details.js?v=0.6.6';
-import {stories} from './constellation-guide.js?v=0.6.6';
-import {artURL} from './constellation-art.js?v=0.6.6';
+import {KIND,raLabel,distanceLabel,outlineStars} from './sky-details.js?v=0.6.7';
+import {stories} from './constellation-guide.js?v=0.6.7';
+import {artURL} from './constellation-art.js?v=0.6.7';
 
 export function objectInfo(o){
   const angle=n=>Number.isFinite(n)?n.toFixed(2)+'°':'자료 없음';
@@ -21,8 +21,7 @@ export function constellationFigure(c,diagram){
 }
 export function constellationInfo(c, stars, diagram, names, art){
   const members=outlineStars(c,stars,names);
-  const magnitudes=members.map(s=>s.mag).filter(Number.isFinite);
-  const brightest=magnitudes.length?Math.min(...magnitudes).toFixed(2)+' 등급':'자료 없음';
+  const brightest=members.filter(s=>Number.isFinite(s.mag)).sort((a,b)=>a.mag-b.mag)[0]?.name||'자료 없음';
   return `<h2>${c.name} <small>${c.en}</small></h2>
     <p class="constellation-story">${stories[c.id]||''}</p>
     <div class="constellation-comparison"><figure><figcaption>별과 연결선</figcaption><div class="constellation-panel">${diagram}</div></figure><figure><figcaption>별자리 그림</figcaption><div class="constellation-panel">${art?`<img src="${artURL(art)}" alt="${c.name} 그림" decoding="async">`:'그림 준비 중'}</div></figure></div>
