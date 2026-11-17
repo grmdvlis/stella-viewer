@@ -82,6 +82,7 @@ dialog.wide-details{width:720px}
 .constellation-panel svg,.constellation-panel img{display:block;width:100%;height:100%;object-fit:contain}
 .constellation-panel svg{stroke:#c0e7db;stroke-width:.35;fill:#effff9}
 .constellation-story{color:#e2edf7}
+.constellation-category{color:#acdaca;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:400;margin:6px 0 12px}
 .constellation-brightest{color:#acdaca;font-size:13px}
 .sky-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .sky-facts div,.constellation-members article{padding:12px;border:1px solid #9ab5d225;border-radius:12px;background:#0a142488}
