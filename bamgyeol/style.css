@@ -329,7 +329,7 @@ body:not(.viewing) #app>header{display:none}
 #more{overflow:auto;overscroll-behavior:contain}
 .more-heading{max-width:550px;margin:0 auto 13px}
 .more-heading h1{display:flex;align-items:center;gap:9px;margin:0;padding:0}
-.bamgyeol-mark{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;border:1px solid #b4e8d145;color:var(--green);font-size:23px}
+.bamgyeol-mark{color:var(--green);font-size:34px;line-height:1}
 #more .settings{max-height:none;overflow:visible}
 #more [hidden]{display:none!important}
 #nickname-form{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px}
