@@ -1,6 +1,6 @@
-import {KIND,raLabel,distanceLabel,outlineStars} from './sky-details.js?v=0.6.9';
-import {stories} from './constellation-guide.js?v=0.6.9';
-import {artURL} from './constellation-art.js?v=0.6.9';
+import {KIND,raLabel,distanceLabel,outlineStars} from './sky-details.js?v=0.7.0';
+import {stories} from './constellation-guide.js?v=0.7.0';
+import {artURL} from './constellation-art.js?v=0.7.0';
 
 export function objectInfo(o){
   const angle=n=>Number.isFinite(n)?n.toFixed(2)+'°':'자료 없음';

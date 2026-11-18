@@ -1,4 +1,4 @@
-import {collectionProgress} from './sky-model.js?v=0.6.9';
+import {collectionProgress} from './sky-model.js?v=0.7.0';
 
 const ranks = [
   [1, '별지기 입문자'],
@@ -20,12 +20,12 @@ const conquests = [
 
 export function stampAchievements(constellations, photos) {
   const {count} = collectionProgress(constellations, photos, '전체보기');
-  const rank = ranks.findLast(([threshold]) => count >= threshold)?.[1] ?? '';
+  const earnedRanks = ranks.filter(([threshold]) => count >= threshold).map(([, name]) => name);
   const earned = conquests.filter(([group]) => {
     const progress = collectionProgress(constellations, photos, group);
     return progress.total > 0 && progress.count === progress.total;
   }).map(([, name]) => name);
-  return {rank, conquests: earned};
+  return {rank: earnedRanks.at(-1) ?? '', ranks: earnedRanks, conquests: earned};
 }
 
 const startKey = 'bamgyeol-observation-start';

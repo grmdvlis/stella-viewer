@@ -56,6 +56,10 @@ export class OrientationFilter{
     const basis=basisFromQuaternion(this.shown);
     return {...directionAngles(basis.forward),basis,q:this.shown};
   }
+  latest(now,maxAge=1200){
+    if(!this.target||now-this.lastSample>maxAge)return null;
+    return directionAngles(basisFromQuaternion(this.target).forward);
+  }
 }
 export class ViewHint{
   constructor(){this.reset()}

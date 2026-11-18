@@ -1,5 +1,9 @@
-export function formatViewTime(date,custom=false){
-  const parts=new Intl.DateTimeFormat('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:true}).formatToParts(date);
+const timeFormatters=new Map();
+export function formatViewTime(date,custom=false,timeZone){
+  if(!timeFormatters.has(timeZone)){
+    timeFormatters.set(timeZone,new Intl.DateTimeFormat('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:true,timeZone}));
+  }
+  const parts=timeFormatters.get(timeZone).formatToParts(date);
   const p=type=>parts.find(x=>x.type===type)?.value;
   return `${p('month')}. ${p('day')}. ${p('dayPeriod')} ${p('hour')}:${p('minute')}`;
 }
