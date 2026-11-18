@@ -142,6 +142,7 @@ dialog.wide-details{width:720px}
 .wish-card [data-action=vote][aria-pressed=true]{background:#234d43;border-color:#99d8ba}
 .wish-card [data-action=vote] strong{font-size:25px}
 .wish-note{margin:0;text-align:center}
+.wish-older{align-self:center;font-size:11px}
 #wish-form textarea{resize:vertical;color:inherit;background:#0a1424;border:1px solid #7089a66b;border-radius:10px;padding:10px;font:inherit}
 #wishes{overflow-y:auto;overscroll-behavior:contain;padding:0 3px 8px;scrollbar-width:thin}
 @media(max-height:690px){.wish-card{min-height:235px}.wish-content{padding:8px 0}}
@@ -166,7 +167,7 @@ dialog.wide-details{width:720px}
 #wish-entrance{
   position:relative;height:100%;isolation:isolate;background:
     linear-gradient(180deg,#070c1770,transparent 32%,transparent 75%,#050a14a8),
-    #080d15 url('assets/wishes/milky-way.webp?v=0.7.2') center / cover no-repeat;
+    #080d15 url('assets/wishes/milky-way.webp?v=0.7.3') center / cover no-repeat;
 }
 #enter-wishes{
   position:absolute;z-index:2;top:calc(max(16px,env(safe-area-inset-top)) + clamp(22px,7dvh,66px));
@@ -282,7 +283,7 @@ body:not(.viewing) #app>header{display:none}
   position:absolute;right:max(12px,env(safe-area-inset-right));top:50%;transform:translateY(-50%);
   width:38px;height:38px;padding:0;border-radius:10px;color:var(--green);font-size:17px;
 }
-.tutorial-open .viewer-bottom,.tutorial-open .viewer-zoom{transform:translateY(-60px)}
+.tutorial-open .viewer-bottom,.tutorial-open .viewer-zoom{transform:translateY(-76px)}
 .tutorial-open #viewer .telemetry{bottom:5px}
 .tutorial-cover{position:absolute;inset:0 0 auto;z-index:25;overflow:hidden;touch-action:manipulation}
 .tutorial-cover[hidden]{display:none}
@@ -312,6 +313,44 @@ body:not(.viewing) #app>header{display:none}
 .tutorial-actions button{min-height:38px;padding:5px 8px;white-space:nowrap;font-size:clamp(10px,2.9vw,13px);border-radius:9px}
 .tutorial-actions button:disabled{opacity:.42}
 .tutorial-actions [data-action=close]{min-width:35px}
+.tutorial-actions [hidden],.tutorial-frog[hidden],.tutorial-spotlight[hidden]{display:none}
+.tutorial-intro{background:#02050d7a}
+.tutorial-frog{
+  position:absolute;left:50%;transform:translateX(-50%);width:min(42vw,210px);height:min(31vw,155px,26dvh);
+  object-fit:contain;filter:drop-shadow(0 8px 22px #0008);
+}
+.tutorial-intro .tutorial-copy::before{
+  content:'';position:absolute;left:calc(50% - 7px);top:-8px;width:14px;height:14px;
+  transform:rotate(45deg);background:#131d2e;border:solid #ffffff31;border-width:1px 0 0 1px;
+}
+.tutorial-help-icon{display:inline-grid;place-items:center;width:1.45em;height:1.45em;border:1px solid #b4e8d156;border-radius:5px;color:var(--green)}
+#dock .intro-tab{outline:1px solid #ffc649;color:#fff1be}
+
+#more{overflow:auto;overscroll-behavior:contain}
+.more-heading{max-width:550px;margin:0 auto 13px}
+.more-heading h1{display:flex;align-items:center;gap:9px;margin:0;padding:0}
+.bamgyeol-mark{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;border:1px solid #b4e8d145;color:var(--green);font-size:23px}
+#more .settings{max-height:none;overflow:visible}
+#more [hidden]{display:none!important}
+#nickname-form{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px}
+#nickname-form input{width:100%;max-width:none;min-width:0}
+#nickname-form button{padding:10px 13px;white-space:nowrap}
+.more-subpage{max-width:550px;margin:auto;padding:0 5px 20px;line-height:1.7}
+.more-subpage h1{font-size:25px;margin:12px 0 4px}
+.more-subpage h2{font-size:17px;margin-top:23px}
+.more-subpage p,.more-subpage li{color:#bdc9db;word-break:keep-all;overflow-wrap:anywhere}
+.more-subpage a{color:var(--green)}
+.more-back{width:40px;height:37px;padding:0;font-size:23px;line-height:1}
+#developer-name{user-select:none;-webkit-touch-callout:none}
+#owner-form{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#owner-form input{min-width:0;flex:1}
+#owner-report pre{white-space:pre-wrap;overflow-wrap:anywhere;color:#c2d3e4}
+#owner-report fieldset{min-width:0;overflow-wrap:anywhere;margin:8px 0;border:1px solid var(--line)}
+#owner-report fieldset img{display:block;width:min(100%,340px);margin:8px 0}
+#owner-report details{padding:8px 0}
+#stamps .stamp-card-title{font-size:13px}
+#stamps .stamp-card-title h3,#stamps .stamp-card-title .badge{font-size:inherit}
+#stamps .card small{padding-bottom:5px}
 
 @media(max-width:650px){
   #app{--dock-bottom:max(7px,env(safe-area-inset-bottom));--dock-height:54px}
@@ -339,4 +378,5 @@ body:not(.viewing) #app>header{display:none}
   #stamps aside button{font-size:12px;padding:11px 5px;word-break:keep-all}
   #stamps #gallery{gap:8px;padding-bottom:4px}
   #stamps .card{min-height:118px;padding:8px}
+  #stamps .stamp-card-title{font-size:11px}
 }

@@ -1,10 +1,10 @@
-import { horizontal, project } from './astro.js?v=0.7.2';
-import { AIM_RADIUS, MOBILE_FOV, DESKTOP_FOV, HORIZON_WIDTH, shouldDisplayStar, closestTarget } from './sky-model.js?v=0.7.2';
-import { createPlanetCache, SOLAR_SYSTEM, planetDisplaySize } from './planets.js?v=0.7.2';
+import { horizontal, project } from './astro.js?v=0.7.3';
+import { AIM_RADIUS, MOBILE_FOV, DESKTOP_FOV, HORIZON_WIDTH, shouldDisplayStar, closestTarget } from './sky-model.js?v=0.7.3';
+import { createPlanetCache, SOLAR_SYSTEM, planetDisplaySize } from './planets.js?v=0.7.3';
 
-import {DEEP_SKY,starDetails,eclipticPoint} from './sky-details.js?v=0.7.2';
-import {createArtLayer} from './constellation-art.js?v=0.7.2';
-import {zoomFov,constellationCenter,guideDirection,guideEndpoint} from './viewer-navigation.js?v=0.7.2';
+import {DEEP_SKY,starDetails,eclipticPoint} from './sky-details.js?v=0.7.3';
+import {createArtLayer} from './constellation-art.js?v=0.7.3';
+import {zoomFov,constellationCenter,guideDirection,guideEndpoint} from './viewer-navigation.js?v=0.7.3';
 const ecliptic=Array.from({length:181},(_,i)=>eclipticPoint(i*2));
 
 export function createSkyRenderer(ctx) {

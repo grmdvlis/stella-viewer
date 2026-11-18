@@ -14,6 +14,14 @@ const guides = {
     ['#time', '{time} 원하는 시간대의 밤하늘을 볼 수 있어요.'],
   ],
 };
+const intro=[
+  ['', '안녕? 나는 왹져 개구리... 같이 별들을 구경해볼까?'],
+  ['viewer','뷰어 탭은 별자리를 찾는 걸 도와줘. 별이 보이는 곳으로 스마트폰을 움직여서 찾아도 되고, 찾고 싶은 별자리를 검색해서 방향을 알 수도 있다. <strong>동작 감지 권한은 꼭 허용</strong>! 자세한 건 오른쪽 위 {help}을 눌러봐.'],
+  ['stamps','도장 탭은 별자리 사진을 찍어서 저장하고 도장깨기하는 곳! 뷰어 화면에서 별자리를 꾹 눌러도 바로 사진 찍을 수 있어. 도장 깨다 보면 기념 뱃지도 줄게. 대신 이상한 사진 찍으면 안 받아준다.'],
+  ['wishes','소원 탭은 다같이 별자리마다 소원 빌어두는 곳. 마음에 드는 소원은 같이 빌어줄 수도 있다. 너도 좋아하는 별자리에 소원 빌어 봐. 이 왹져 개구리가 들어줄 수도.'],
+  ['more','더보기에서는 계정 관리하거나 이것저것 설정할 수 있다. 네가 모은 뱃지도 구경할 수 있어.'],
+];
+const introKey='bamgyeol-intro-dismissed';
 
 export function mountViewerTutorial(app,getMode){
   const help=app.querySelector('#tutorial-help');
@@ -27,7 +35,7 @@ export function mountViewerTutorial(app,getMode){
     <div class="tutorial-copy" tabindex="-1" aria-live="polite"><p></p></div>
     <div class="tutorial-actions">
       <div><button type="button" data-action="previous">◀이전</button><button type="button" data-action="next">다음▶</button></div>
-      <button type="button" data-action="close" aria-label="튜토리얼 닫기">X</button>
+      <div><button type="button" data-action="dismiss" hidden>다시 보지 않기</button><button type="button" data-action="close" aria-label="안내 닫기">X</button></div>
     </div>`;
   app.append(cover);
 
@@ -38,24 +46,32 @@ export function mountViewerTutorial(app,getMode){
   const viewer=app.querySelector('#viewer');
   const header=help.closest('header');
   const dock=app.querySelector('#dock');
-  let steps,step=0;
+  const telemetry=app.querySelector('.telemetry');
+  const dismiss=cover.querySelector('[data-action=dismiss]');
+  let steps,step=0,frog,highlighted;
 
   function layout(){
     if(cover.hidden)return;
     const root=app.getBoundingClientRect();
     const height=dock.getBoundingClientRect().top-root.top-3;
     cover.style.height=height+'px';
+    controls.style.bottom=Math.max(20,root.top+height-telemetry.getBoundingClientRect().top+12)+'px';
+    const description=copy.offsetHeight;
+    const bottomLimit=controls.offsetTop-10;
+    if(steps===intro){
+      const frogHeight=frog.offsetHeight;
+      const frogTop=Math.max(2,Math.min((root.height-frogHeight)/2,bottomLimit-description-12-frogHeight));
+      frog.style.top=frogTop+'px';
+      copy.style.top=frogTop+frogHeight+12+'px';
+      return;
+    }
     const target=steps[step][0];
     const box=app.querySelector(target).getBoundingClientRect();
     const top=box.top-root.top;
-    // Keep the navigation above the entire angle readout even when viewport insets change.
-    controls.style.bottom=target==='#angles'?Math.max(20,height-top+12)+'px':'';
     Object.assign(spotlight.style,{
       left:Math.max(0,box.left-root.left-4)+'px',top:Math.max(0,top-4)+'px',
       width:box.width+8+'px',height:box.height+8+'px',
     });
-    const description=copy.offsetHeight;
-    const bottomLimit=controls.offsetTop-10;
     const above=top-description-15;
     const below=top+box.height+16;
     const ideal=top>height/2&&above>=12?above:below+description<=bottomLimit?below:above;
@@ -70,13 +86,32 @@ export function mountViewerTutorial(app,getMode){
       .replaceAll('{sensor}',icon('#sensors svg')).replaceAll('{search}',icon('.search-trigger svg')).replaceAll('{time}',icon('#time svg'))
       .replace('{location}','<span class="tutorial-location"><span class="dot" aria-hidden="true"></span>현위치</span>')
       .replace('{zoom}',`<span class="tutorial-zoom-icons">${zoomIcons}</span>`)
-      .replace('{angles}','<span class="tutorial-angles">AZ / ALT</span>');
+      .replace('{angles}','<span class="tutorial-angles">AZ / ALT</span>')
+      .replace('{help}',`<span class="tutorial-help-icon">${help.textContent}</span>`);
+    highlighted?.classList.remove('intro-tab');
+    if(steps===intro&&steps[step][0]){
+      highlighted=dock.querySelector(`[data-tab="${steps[step][0]}"]`);
+      highlighted?.classList.add('intro-tab');
+    }
     previous.disabled=step===0;
     layout();
   }
-  function open(){
-    steps=guides[getMode()];
+  function open(firstRun){
+    steps=firstRun?intro:guides[getMode()];
     step=0;
+    if(firstRun&&!frog){
+      frog=document.createElement('img');
+      frog.className='tutorial-frog';
+      frog.alt='검은 선글라스를 쓴 왹져 개구리';
+      frog.src='assets/tutorial-frog.webp?v=0.7.3';
+      frog.addEventListener('load',layout);
+      cover.prepend(frog);
+    }
+    if(frog)frog.hidden=!firstRun;
+    spotlight.hidden=firstRun;
+    dismiss.hidden=!firstRun;
+    cover.classList.toggle('tutorial-intro',firstRun);
+    cover.setAttribute('aria-label',firstRun?'밤결 첫 튜토리얼':'뷰어 도움말');
     app.classList.add('tutorial-open');
     cover.hidden=false;
     viewer.inert=header.inert=true;
@@ -86,6 +121,7 @@ export function mountViewerTutorial(app,getMode){
   }
   function close(returnFocus=true){
     if(cover.hidden)return;
+    highlighted?.classList.remove('intro-tab');
     cover.hidden=true;
     app.classList.remove('tutorial-open');
     viewer.inert=header.inert=false;
@@ -96,14 +132,19 @@ export function mountViewerTutorial(app,getMode){
     if(step>0){step--;render()}
   }
   function next(){
-    if(step+1===steps.length)close();
+    if(step+1===steps.length){
+      if(steps===intro)rememberIntro();
+      close();
+    }
     else {step++;render()}
   }
-  help.onclick=open;
+  function rememberIntro(){try{localStorage.setItem(introKey,'yes')}catch{}}
+  help.onclick=()=>open(false);
   cover.onclick=event=>{
     const action=event.target.closest('button')?.dataset.action;
     if(action==='previous')back();
     else if(action==='close')close();
+    else if(action==='dismiss'){rememberIntro();close()}
     else next();
   };
   cover.addEventListener('keydown',event=>{
@@ -118,4 +159,8 @@ export function mountViewerTutorial(app,getMode){
     if(event.target.closest('button'))close(false);
   });
   addEventListener('resize',layout);
+  return ()=>{
+    try{if(localStorage.getItem(introKey)==='yes')return}catch{}
+    open(true);
+  };
 }

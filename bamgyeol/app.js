@@ -1,20 +1,22 @@
-import {mountConstellationSearch,clampZoom,zoomFov} from './viewer-navigation.js?v=0.7.2';
-import {constellationDiagram} from './constellation-art.js?v=0.7.2';
-import {openDialogWithoutInputFocus} from './modal-focus.js?v=0.7.2';
-import {horizontal,cameraPose,manualAngles,wrap} from './astro.js?v=0.7.2';
-import {prepareStars,prepareConstellations,collectionProgress,shouldDisplayStar} from './sky-model.js?v=0.7.2';
-import {createSkyRenderer} from './sky-renderer.js?v=0.7.2';
-import {OrientationFilter,ViewHint,quaternion} from './orientation.js?v=0.7.2';
-import {formatViewTime,currentCity} from './viewer-ui.js?v=0.7.2';
-import {objectInfo,constellationInfo,constellationEmoji} from './details-ui.js?v=0.7.2';
-import {mountWishes} from './wishes.js?v=0.7.2';
-import {mountWishEntrance} from './wish-entrance.js?v=0.7.2';
-import {outlineStars} from './sky-details.js?v=0.7.2';
-import {DEFAULT_NICKNAME,stories,viewingGuide} from './constellation-guide.js?v=0.7.2';
-import {stampAchievements,observationDays} from './achievements.js?v=0.7.2';
-import {stampDirectionIssue,stampImageIssues} from './stamp-validation.js?v=0.7.2';
-import {localObservationDate,observationZone,timeInputValue} from './observation-time.js?v=0.7.2';
-import {mountViewerTutorial} from './viewer-tutorial.js?v=0.7.2';
+import {mountConstellationSearch,clampZoom,zoomFov} from './viewer-navigation.js?v=0.7.3';
+import {constellationDiagram} from './constellation-art.js?v=0.7.3';
+import {openDialogWithoutInputFocus} from './modal-focus.js?v=0.7.3';
+import {horizontal,cameraPose,manualAngles,wrap} from './astro.js?v=0.7.3';
+import {prepareStars,prepareConstellations,collectionProgress,shouldDisplayStar} from './sky-model.js?v=0.7.3';
+import {createSkyRenderer} from './sky-renderer.js?v=0.7.3';
+import {OrientationFilter,ViewHint,quaternion} from './orientation.js?v=0.7.3';
+import {formatViewTime,currentCity} from './viewer-ui.js?v=0.7.3';
+import {objectInfo,constellationInfo,constellationEmoji} from './details-ui.js?v=0.7.3';
+import {mountWishes} from './wishes.js?v=0.7.3';
+import {mountWishEntrance} from './wish-entrance.js?v=0.7.3';
+import {outlineStars} from './sky-details.js?v=0.7.3';
+import {DEFAULT_NICKNAME,stories,viewingGuide} from './constellation-guide.js?v=0.7.3';
+import {stampAchievements,observationDays} from './achievements.js?v=0.7.3';
+import {stampDirectionIssue,stampImageIssues} from './stamp-validation.js?v=0.7.3';
+import {localObservationDate,observationZone,timeInputValue} from './observation-time.js?v=0.7.3';
+import {mountViewerTutorial} from './viewer-tutorial.js?v=0.7.3';
+import {community} from './community.js?v=0.7.3';
+import {mountMore,readPreference,storePreference} from './more.js?v=0.7.3';
 let redrawWishes, gpsPosition;
 const brightest=new Map();
 let currentTarget=null, outlineNames={}, artCatalog={};
@@ -28,7 +30,7 @@ let tab='viewer',mode='live',lat=37.5665,lon=126.978,az=0,alt=35,customDate=null
 let zoomLevel=0,searchTarget=null;
 let stampSession=null,customZone='Asia/Seoul';
 mountConstellationSearch($('#viewer-search'),()=>constellations,c=>{searchTarget=c;hideConstellationMenu()});
-mountViewerTutorial($('#app'),()=>mode);
+const startTutorial=mountViewerTutorial($('#app'),()=>mode);
 function changeZoom(step){zoomLevel=clampZoom(zoomLevel+step);$('#zoom-in').disabled=zoomLevel===2;$('#zoom-out').disabled=zoomLevel===-2;$('#zoom-level').textContent=(1.4**zoomLevel).toFixed(2).replace(/0+$/,'').replace(/\.$/,'')+'×'}
 $('#zoom-in').onclick=()=>changeZoom(1);$('#zoom-out').onclick=()=>changeZoom(-1);
 const canvas=$('#sky'),ctx=canvas.getContext('2d');
@@ -58,13 +60,14 @@ function go(t){
   if(t==='more')refreshAchievements();
 }
 $('#dock').onclick=e=>{const b=e.target.closest('button');if(b)go(b.dataset.tab)};go(tab);
+startTutorial();
 function resize(){hideConstellationMenu();W=innerWidth;H=innerHeight;canvas.width=W*devicePixelRatio;canvas.height=H*devicePixelRatio;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0)}addEventListener('resize',resize);resize();
 const groups=['전체보기','황도 12궁','계절형','북극형','남극형'];
 let land=null;fetch('data/land.json').then(r=>r.json()).then(d=>{land=d;if($('#map'))drawMap()}).catch(()=>{});
 let db;async function database(){if(db)return db;db=await new Promise((resolve,reject)=>{const r=indexedDB.open('bamgyeol',1);r.onupgradeneeded=()=>r.result.createObjectStore('photos');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});return db}
 async function allPhotos(){const d=await database();return new Promise((res,rej)=>{const r=d.transaction('photos').objectStore('photos').getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function savePhoto(id,blob,date,position){
-  const photo={id,blob,date:date.toISOString(),lat:position.latitude,lon:position.longitude};
+  const photo={id,blob,date:date.toISOString(),backup:true,lat:position.latitude,lon:position.longitude};
   const d=await database();
   const previous=await new Promise((resolve,reject)=>{
     const tx=d.transaction('photos','readwrite');
@@ -76,6 +79,7 @@ async function savePhoto(id,blob,date,position){
   });
   const before=stampAchievements(constellations,previous);
   const after=stampAchievements(constellations,[...previous,photo]);
+  syncProfile();
   if(tab==='stamps')gallery();
   return [
     ...(after.rank&&after.rank!==before.rank?[after.rank]:[]),
@@ -90,6 +94,7 @@ function badgeList(badges){
 async function refreshAchievements(now=new Date()){
   let photos=[];
   try{photos=await allPhotos()}catch{}
+  $('#backup-legacy').hidden=!photos.some(photo=>!photo.backup)||readPreference('bamgyeol-backup-legacy','')==='yes';
   const {ranks,conquests}=stampAchievements(constellations,photos);
   const badges=[...ranks,...conquests];
   $('#achievement-badges').innerHTML=badges.length?badgeList(badges):'<p>첫 도장을 등록하면 뱃지를 받아요.</p>';
@@ -210,7 +215,7 @@ $('#object-info').onpointerdown=()=>{$('#object-info').targetSnapshot=currentTar
 $('#object-info').onclick=e=>{const target=(e.detail?$('#object-info').targetSnapshot:null)||currentTarget;if(target)popup(objectInfo(target))};
 function capture(c){
   if(!c)return;
-  popup(`<h2>${c.name} 도장깨기</h2><p>휴대폰을 세운 상태에서 카메라를 켠 뒤, 목표 별자리의 밤하늘을 직접 촬영해 주세요. 위치·동작·카메라 권한이 필요해요.</p><video id="video" autoplay playsinline muted hidden></video><button class="primary" id="camera">카메라 켜기</button><button class="primary" id="shutter" hidden>사진 촬영 · 도장 등록</button><p role="status" id="photo-status"></p>`);
+  popup(`<h2>${c.name} 도장깨기</h2><p>휴대폰을 세운 상태에서 카메라를 켠 뒤, 목표 별자리의 밤하늘을 직접 촬영해 주세요. 위치·동작·카메라 권한이 필요해요. 등록한 사진은 이 기기와 개발자만 확인할 수 있는 백업에 저장돼요.</p><video id="video" autoplay playsinline muted hidden></video><button class="primary" id="camera">카메라 켜기</button><button class="primary" id="shutter" hidden>사진 촬영 · 도장 등록</button><p role="status" id="photo-status"></p>`);
   const camera=$('#camera'), shutter=$('#shutter'), video=$('#video'), status=$('#photo-status');
   const stillOpen=()=>$('#modal').open&&video.isConnected;
 
@@ -302,9 +307,10 @@ function capture(c){
 }
 async function compress(blob){const bitmap=await createImageBitmap(blob),scale=Math.min(1,1400/Math.max(bitmap.width,bitmap.height));const c=document.createElement('canvas');c.width=bitmap.width*scale;c.height=bitmap.height*scale;c.getContext('2d').drawImage(bitmap,0,0,c.width,c.height);bitmap.close();return new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(Error('이미지 변환 실패')),'image/jpeg',.85))}
 try{$('#constellation-art').checked=localStorage.getItem('bamgyeol-constellation-art')!=='off'}catch{}
-$('#constellation-art').onchange=e=>{try{localStorage.setItem('bamgyeol-constellation-art',e.target.checked?'on':'off')}catch{}};
-$('#about').onclick=()=>popup('<h2>밤결</h2><p>밤을 걷다가 문득 궁금해진 별. 밤결은 위치와 시간, 바라보는 방향으로 당신의 작은 우주를 찾는 별자리 뷰어입니다.</p><p>밝기(겉보기 등급)를 기준으로 별 크기와 빛번짐을 표현합니다. 거리가 멀다고 어둡다고 단정할 수 없어 거리만으로 크기를 조정하지 않습니다. 대기 굴절·지형·광공해는 현재 반영하지 않습니다. 태양·달·행성 이미지는 구별을 위한 일러스트이며 실제 크기나 표면 위상을 나타내지는 않습니다.</p>');$('#developer').onclick=()=>popup('<h2>개발 · 데이터 출처</h2><p>밤결 0.7.2 · 웹 프로토타입<br>별 좌표, 연결선과 항성 이름: Olaf Frohn의 d3-celestial (BSD-3-Clause). 뱀자리의 두 영역을 한 개로 합쳐 총 88개를 표시합니다.</p><p><a href="https://github.com/ofrohn/d3-celestial" target="_blank" rel="noopener">원본 데이터 및 라이선스 ↗</a><br><a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">행성 위치 계산: Astronomy Engine 2.1.19 (MIT) ↗</a></p><p>지정 위치의 시간대: <a href="https://github.com/photostructure/tz-lookup" target="_blank" rel="noopener">PhotoStructure tz-lookup (CC0) ↗</a></p><p>도시명: 통계청 통계지리정보서비스 제공 2013 행정구역 경계를 기기 안에서 조회합니다. 경계 부근·변경된 행정구역·해외에서는 도시명이 부정확하거나 확인되지 않을 수 있습니다.</p><p>소원·함께 빌기·사진·닉네임은 이 브라우저에 저장됩니다. 브라우저 데이터를 삭제하면 도장도 사라지므로 사진을 내려받아 보관하세요.</p>');
-try{$('#nickname').value=localStorage.getItem('nickname')?.trim()||DEFAULT_NICKNAME;const a=localStorage.getItem('avatar');if(a){$('#remove-avatar').hidden=false;const img=document.createElement('img');img.src=a;$('.profile-photo').prepend(img)}}catch{}$('#save-profile').onclick=()=>{try{localStorage.setItem('nickname', $('#nickname').value=$('#nickname').value.trim()||DEFAULT_NICKNAME);toast('프로필을 저장했어요')}catch{toast('프로필 저장이 제한된 브라우저입니다')}};$('#avatar').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const blob=await compress(file),reader=new FileReader();reader.onload=()=>{try{localStorage.setItem('avatar',reader.result);$('#remove-avatar').hidden=false;$('.profile-photo img')?.remove();const img=document.createElement('img');img.src=reader.result;$('.profile-photo').prepend(img)}catch{toast('프로필 사진 저장 공간이 부족해요')}};reader.readAsDataURL(blob)}catch{toast('이미지 파일을 확인해주세요')}};$('#calibration').onchange=e=>{calibration=Math.max(-180,Math.min(180,Number(e.target.value)||0))};$('#export').onclick=async()=>{try{const ps=await allPhotos();if(!ps.length){toast('아직 수집한 도장이 없어요');return}popup('<h2>도장 사진 보관하기</h2><p>각 사진을 눌러 내려받으세요.</p><div id="downloads"></div>');for(const p of ps){const a=document.createElement('a'),url=URL.createObjectURL(p.blob);imageURLs.push(url);a.href=url;a.download=`${p.id}-${p.date.slice(0,10)}.jpg`;a.textContent=(constellations.find(c=>c.id===p.id)?.name||p.id)+' ↓';a.style.cssText='display:block;padding:12px;color:#b4e8d1';$('#downloads').append(a)}}catch{toast('저장소를 읽지 못했어요')}};
+
+const avatar=readPreference('avatar','');
+if(avatar){$('#remove-avatar').hidden=false;const img=document.createElement('img');img.src=avatar;$('.profile-photo').prepend(img)}
+$('#avatar').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const blob=await compress(file),reader=new FileReader();reader.onload=()=>{try{localStorage.setItem('avatar',reader.result);$('#remove-avatar').hidden=false;$('.profile-photo img')?.remove();const img=document.createElement('img');img.src=reader.result;$('.profile-photo').prepend(img)}catch{toast('프로필 사진 저장 공간이 부족해요')}};reader.readAsDataURL(blob)}catch{toast('이미지 파일을 확인해주세요')}};$('#export').onclick=async()=>{try{const ps=await allPhotos();if(!ps.length){toast('아직 수집한 도장이 없어요');return}popup('<h2>도장 사진 보관하기</h2><p>각 사진을 눌러 내려받으세요.</p><div id="downloads"></div>');for(const p of ps){const a=document.createElement('a'),url=URL.createObjectURL(p.blob);imageURLs.push(url);a.href=url;a.download=`${p.id}-${p.date.slice(0,10)}.jpg`;a.textContent=(constellations.find(c=>c.id===p.id)?.name||p.id)+' ↓';a.style.cssText='display:block;padding:12px;color:#b4e8d1';$('#downloads').append(a)}}catch{toast('저장소를 읽지 못했어요')}};
 $('#remove-avatar').onclick=()=>{
   try{
     localStorage.removeItem('avatar');
@@ -315,6 +321,86 @@ $('#remove-avatar').onclick=()=>{
   }catch{toast('프로필 사진을 삭제하지 못했어요')}
 };
 $('#calibration-info').onclick=()=>popup('<h2>센서 방위 보정</h2><p>기본 모드에서 센서를 사용할 때, 휴대폰이 향한다고 계산한 수평 방향을 조정해요.</p><p>+는 북→동 방향으로 방위각을 더하고, −는 북→서 방향으로 방위각을 빼요. 예를 들어 센서가 북쪽(0°)을 가리킬 때 +10°는 10°, −10°는 350°로 봐요.</p>');
+async function getProfile(photos){
+  photos??=await allPhotos().catch(()=>[]);
+  const {ranks,conquests}=stampAchievements(constellations,photos);
+  return {
+    nickname:readPreference('nickname','')||DEFAULT_NICKNAME,
+    settings:{faint:$('#faint').checked,artwork:$('#constellation-art').checked,deepSky:$('#deep-sky').checked,calibration},
+    stamps:photos.map(photo=>photo.id),badges:[...ranks,...conquests],
+  };
+}
+let syncing=false,syncQueued=false;
+async function syncProfile(){
+  syncQueued=true;
+  if(syncing)return;
+  syncing=true;
+  try{
+    while(syncQueued){
+      syncQueued=false;
+      const photos=await allPhotos().catch(()=>[]);
+      await community('account',{profile:await getProfile(photos)});
+      await backupPhotos(photos);
+    }
+  }catch{}finally{syncing=false}
+}
+async function backupPhotos(photos){
+  let uploaded={};
+  try{uploaded=JSON.parse(readPreference('bamgyeol-backed-stamps','{}'))||{}}catch{}
+  const allowOld=readPreference('bamgyeol-backup-legacy','')==='yes';
+  for(const photo of photos){
+    if((!photo.backup&&!allowOld)||uploaded[photo.id]===photo.date)continue;
+    let blob=photo.blob;
+    if(blob.size>1_045_000){
+      const bitmap=await createImageBitmap(blob);
+      const scale=Math.min(1,800/Math.max(bitmap.width,bitmap.height));
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.round(bitmap.width*scale);
+      canvas.height=Math.round(bitmap.height*scale);
+      canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);
+      bitmap.close();
+      blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.7));
+    }
+    if(!blob||blob.size>1_045_000)continue;
+    const url=await new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=()=>resolve(reader.result);
+      reader.onerror=reject;
+      reader.readAsDataURL(blob);
+    });
+    await community('uploadPhoto',{stamp:photo.id,date:photo.date,jpeg:url.split(',')[1]});
+    uploaded[photo.id]=photo.date;
+    storePreference('bamgyeol-backed-stamps',JSON.stringify(uploaded));
+  }
+}
+mountMore({toast,getProfile,getPhotos:allPhotos,syncProfile});
+$('#faint').checked=readPreference('bamgyeol-faint','off')==='on';
+$('#deep-sky').checked=readPreference('bamgyeol-deep-sky','on')==='on';
+calibration=Math.max(-180,Math.min(180,Number(readPreference('bamgyeol-calibration','0'))||0));
+$('#calibration').value=String(calibration);
+$('#calibration').onchange=()=>{
+  calibration=Math.max(-180,Math.min(180,Number($('#calibration').value)||0));
+  $('#calibration').value=String(calibration);
+  storePreference('bamgyeol-calibration',String(calibration));
+  syncProfile();
+};
+for(const id of ['faint','deep-sky','constellation-art']){
+  $('#'+id).onchange=event=>{
+    storePreference('bamgyeol-'+id,event.target.checked?'on':'off');
+    syncProfile();
+  };
+}
+$('#backup-legacy').onclick=()=>{
+  popup('<h2>기존 도장 사진을 백업할까요?</h2><p>백업한 사진은 개발자 인증을 거쳐서만 확인할 수 있어요. 촬영 좌표는 이 기기에 남아요.</p><button id="confirm-stamp-backup" type="button" class="primary">백업하기</button>');
+  $('#confirm-stamp-backup').onclick=()=>{
+    if(!storePreference('bamgyeol-backup-legacy','yes'))return;
+    close();
+    refreshAchievements();
+    syncProfile();
+    toast('기존 도장 사진의 백업을 시작했어요');
+  };
+};
+addEventListener('online',syncProfile);
 function updateStarCount(){
   const mobile=mobileView.matches,faint=$('#faint').checked;
   const count=stars.filter(s=>shouldDisplayStar(s,mobile,faint)).length;
@@ -364,7 +450,7 @@ function wishConstellation(c){
 try {
   const files=['stars.6','constellations','constellations.lines','outline-star-names','constellation-art'];
   const data=await Promise.all(files.map(async name=>{
-    const response=await fetch(`data/${name}.json?v=0.7.2`);
+    const response=await fetch(`data/${name}.json?v=0.7.3`);
     if(!response.ok)throw Error('별 데이터 로딩 실패');
     return response.json();
   }));
@@ -389,3 +475,4 @@ try {
   $('#name').textContent='하늘 연결을 기다리고 있어요';
 }
 refreshAchievements();
+syncProfile();

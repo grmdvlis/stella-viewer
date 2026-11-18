@@ -1,4 +1,4 @@
-import lookup from './vendor/tz-lookup.js?v=0.7.2';
+import lookup from './vendor/tz-lookup.js?v=0.7.3';
 
 export function observationZone(latitude,longitude){
   return lookup(latitude,longitude);
