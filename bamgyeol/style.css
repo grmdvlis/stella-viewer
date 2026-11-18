@@ -108,7 +108,30 @@ dialog.wide-details{width:720px}
 .wish-card h2{font-size:clamp(17px,3vw,24px);margin:4px 0}
 .wish-content{flex:1;padding:16px 0;overflow-wrap:anywhere}
 .wish-content p{line-height:1.8;white-space:pre-wrap}
-.wish-profile{display:flex;align-items:center;gap:9px}
+.wish-profile{display:flex;align-items:center;flex-wrap:wrap;gap:9px}
+.wish-profile .wish-rank,.achievement-list li{
+  border:1px solid #b4e8d14d;
+  border-radius:999px;
+  background:#b4e8d110;
+  color:var(--green);
+  padding:4px 10px;
+  font-size:11px;
+}
+.achievement-list{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0}
+.achievements{border-top:1px solid var(--line);padding-top:14px}
+.achievements h2{font-size:14px;margin:0 0 9px}
+.achievements p,.observation-days{color:#a5b0c2;font-size:12px}
+.observation-days{text-align:center;margin:4px 0 10px}
+.ad-placeholder{
+  display:grid;
+  place-items:center;
+  min-height:clamp(96px,24vh,210px);
+  border:1px dashed #8ba2b6;
+  border-radius:12px;
+  color:#b7c5d7;
+  background:#0c1422;
+}
+#ad-progress{display:block;width:100%;height:12px;margin-top:16px;accent-color:var(--green)}
 .wish-avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#263b50;color:var(--green);overflow:hidden}
 .wish-avatar img{width:100%;height:100%;object-fit:cover}
 .wish-card footer{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:10px;align-items:center}

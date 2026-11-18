@@ -1,15 +1,18 @@
-import {DEFAULT_NICKNAME} from './constellation-guide.js?v=0.6.8';
+import {DEFAULT_NICKNAME} from './constellation-guide.js?v=0.6.9';
 const SAMPLES = {
   Cas:[{id:'cas-1',author:'새벽별',text:'좋아하는 일을 오래, 내 속도로 할 수 있기를.',count:0},{id:'cas-2',author:'하늘산책',text:'오랜만에 만나는 친구와 저녁 산책을 할 수 있기를.',count:0}],
   Ori:[{id:'ori-1',author:'겨울빛',text:'내일의 나에게 오늘보다 조금 더 다정할 수 있기를.',count:0}],
 };
 const escape = s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
-export function mountWishes(root,stars,popup,close,figure) {
-  let state={posts:{},voted:{}};
-  try{state=JSON.parse(localStorage.getItem('bamgyeol-wishes')||'null')||state}catch{}
+export function mountWishes(root,stars,popup,close,figure,previewAd,getRank) {
+  const storageKey='bamgyeol-wishes';
+  function loadState(fallback={posts:{},voted:{}}){
+    try{return JSON.parse(localStorage.getItem(storageKey)||'null')||fallback}catch{return fallback}
+  }
+  let state=loadState();
   let selected=Math.max(0,stars.findIndex(c=>c.id==='Cas')),post=0,gesture=null;
   const wrap=(n,size)=>(n%size+size)%size;
-  const save=()=>{try{localStorage.setItem('bamgyeol-wishes',JSON.stringify(state));return true}catch{return false}};
+  const save=()=>{try{localStorage.setItem(storageKey,JSON.stringify(state));return true}catch{return false}};
   let pending=0, sliding=false;
   async function shift(offset){
     if(!offset)return;
@@ -44,7 +47,7 @@ export function mountWishes(root,stars,popup,close,figure) {
       }).join('')}</div>
       <article class="wish-card" aria-label="${escape(c.name)} 소원"><div class="wish-card-heading"><div><small>${selected+1} / ${stars.length}</small><h2>${escape(c.name)}</h2></div><small>${entries.length?'소원 '+entries.length+'개':'첫 소원을 기다려요'}</small><button data-action="new">+ 소원 남기기</button></div>
       ${figure(c)}
-      <div class="wish-content" aria-live="polite">${wish?`<div class="wish-profile"><span class="wish-avatar">${wish.avatar?'<img alt="" src="'+escape(wish.avatar)+'">':'✦'}</span><strong>${escape(wish.author)}</strong>${wish.id.includes('-')&&!wish.id.startsWith('local-')?'<small>예시 소원</small>':''}</div><p>${escape(wish.text)}</p>`:'<p>이 별자리에 첫 소원을 남겨보세요.</p>'}</div>
+      <div class="wish-content" aria-live="polite">${wish?`<div class="wish-profile"><span class="wish-avatar">${wish.avatar?'<img alt="" src="'+escape(wish.avatar)+'">':'✦'}</span><strong>${escape(wish.author)}</strong>${wish.rank?`<small class="wish-rank">${escape(wish.rank)}</small>`:''}${wish.id.includes('-')&&!wish.id.startsWith('local-')?'<small>예시 소원</small>':''}</div><p>${escape(wish.text)}</p>`:'<p>이 별자리에 첫 소원을 남겨보세요.</p>'}</div>
       <footer><button data-action="prev" aria-label="이전 소원" ${entries.length<2?'disabled':''}>◀</button>
       <button data-action="vote" aria-pressed="${voted}" ${wish?'':'disabled'}><small>이 소원 함께 빌기</small><strong>${wish?wish.count+Number(voted):0}</strong></button>
       <button data-action="next" aria-label="다음 소원" ${entries.length<2?'disabled':''}>▶</button></footer></article>
@@ -59,25 +62,36 @@ export function mountWishes(root,stars,popup,close,figure) {
     const action=b.dataset.action;
     if(action==='prev'||action==='next'){post=wrap(post+(action==='prev'?-1:1),entries.length);draw();root.querySelector('[data-action="'+action+'"]').focus()}
     if(action==='vote'&&entries[post]){
-      const id=entries[post].id; state.voted[id]=!state.voted[id];
+      const id=entries[post].id;
+      state=loadState(state);
+      state.voted[id]=!state.voted[id];
       const saved=save();draw();root.querySelector('[data-action="vote"]').focus();
       if(!saved)root.querySelector('.wish-note').textContent='저장할 수 없어 새로고침하면 변경이 사라져요.';
     }
-    if(action==='new'){
-      popup(`<h2>${escape(c.name)}에 소원 남기기</h2><form id="wish-form"><label>소원<textarea rows="4" maxlength="240" required></textarea></label><small>이 브라우저에만 저장됩니다.</small><button class="primary">소원 남기기</button><small role="status"></small></form>`);
-      document.querySelector('#wish-form').onsubmit=event=>{
-        event.preventDefault();
-        const text=event.currentTarget.querySelector('textarea').value.trim();if(!text)return;
-        let author=DEFAULT_NICKNAME,avatar='';
-        try{author=localStorage.getItem('nickname')?.trim()||author;avatar=localStorage.getItem('avatar')||''}catch{}
-        if(!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(avatar))avatar='';
-        const entries=state.posts[c.id] ||= [];
-        entries.unshift({id:'local-'+crypto.randomUUID(),author,avatar,text,count:0});
-        if(!save()){entries.shift();event.currentTarget.querySelector('[role=status]').textContent='저장 공간을 확인해주세요.';return}
-        post=0;close();draw();root.querySelector('[data-action="new"]').focus();
-      };
-    }
+    if(action==='new')composeWish(c);
   };
+  function composeWish(c,draft='',error=''){
+    popup(`<h2>${escape(c.name)}에 소원 남기기</h2><form id="wish-form"><label>소원<textarea rows="4" maxlength="240" required></textarea></label><small>5초 광고 미리보기 후 이 브라우저에 소원을 저장해요.</small><button class="primary">소원 남기기</button><small role="status"></small></form>`);
+    const form=document.querySelector('#wish-form');
+    form.querySelector('textarea').value=draft;
+    form.querySelector('[role=status]').textContent=error;
+    form.onsubmit=async event=>{
+      event.preventDefault();
+      const text=form.querySelector('textarea').value.trim();
+      if(!text||!form.isConnected)return;
+      await previewAd('별자리로 소원 보내는 중…');
+      let author=DEFAULT_NICKNAME,avatar='';
+      try{author=localStorage.getItem('nickname')?.trim()||author;avatar=localStorage.getItem('avatar')||''}catch{}
+      if(!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(avatar))avatar='';
+      const rank=await getRank();
+      state=loadState(state);
+      const entries=state.posts[c.id] ||= [];
+      entries.unshift({id:'local-'+crypto.randomUUID(),author,avatar,rank,text,count:0});
+      if(!save()){entries.shift();composeWish(c,text,'저장 공간을 확인해주세요.');return}
+      selected=stars.indexOf(c);
+      post=0;close();draw();root.querySelector('[data-action="new"]').focus();
+    };
+  }
   // Keep the track mounted while the pointer is captured. Recycle stars off-screen.
   function paintWheel(travel){
     const middle=Math.round(travel), fraction=travel-middle;
