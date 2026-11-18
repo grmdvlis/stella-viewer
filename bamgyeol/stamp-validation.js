@@ -1,4 +1,4 @@
-import {horizontal,rad} from './astro.js?v=0.7.0';
+import {horizontal,rad} from './astro.js?v=0.7.1';
 
 const directionTolerance = 22;
 

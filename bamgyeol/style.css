@@ -200,6 +200,11 @@ body:not(.viewing) > header{display:none}
 .viewer-zoom button{font-size:25px;background:#101c2bd9}
 .viewer-zoom button:disabled{opacity:.3;cursor:default}
 .viewer-zoom output{font-size:10px;color:#9bb4c5}
+.viewer-search,.viewer-zoom{touch-action:manipulation}
+/* iOS Safari may zoom the page when a smaller input receives focus. */
+@media (any-pointer:coarse){
+  .search-pill input{font-size:16px}
+}
 @media(prefers-reduced-motion:reduce){.search-pill{transition:none}}
 #stamps,#wishes,#more{top:max(16px,env(safe-area-inset-top))}
 .wish-constellation{display:grid;grid-template-columns:clamp(58px,20vw,115px) minmax(0,1fr) auto;gap:clamp(6px,2vw,14px);align-items:center;margin-top:10px}
@@ -243,6 +248,33 @@ body:not(.viewing) #app>header{display:none}
 #modal #video:not([hidden]){display:block;margin-bottom:12px}
 .stamp-issues{padding-inline-start:20px;color:#d6deeb;font-size:13px;line-height:1.65}
 .stamp-issues li+li{margin-top:6px}
+
+.tutorial-help{
+  position:absolute;right:max(12px,env(safe-area-inset-right));top:50%;transform:translateY(-50%);
+  width:38px;height:38px;padding:0;border-radius:10px;color:var(--green);font-size:17px;
+}
+.tutorial-open .viewer-bottom,.tutorial-open .viewer-zoom{translate:0 -44px}
+.tutorial-cover{position:absolute;inset:0 0 auto;z-index:25;overflow:hidden;touch-action:manipulation}
+.tutorial-cover[hidden]{display:none}
+.tutorial-spotlight{
+  position:absolute;border:2px solid #ffc649;border-radius:5px;pointer-events:none;
+  box-shadow:0 0 0 200vmax #02050def;
+}
+.tutorial-copy{
+  position:absolute;left:50%;transform:translateX(-50%);width:min(calc(100% - 32px),460px);
+  padding:15px 18px;background:#131d2ef7;border:1px solid #ffffff31;border-radius:14px;color:#f0f3f8;
+  font-size:clamp(13px,3.4vw,16px);line-height:1.65;word-break:keep-all;
+}
+.tutorial-copy:focus{outline:none}
+.tutorial-copy p{margin:0}
+.tutorial-copy svg{display:inline-block;width:1.2em;height:1.2em;vertical-align:-.2em;stroke:var(--green);fill:none;stroke-width:1.65}
+.tutorial-actions{
+  position:absolute;inset:auto 12px 4px;display:flex;justify-content:space-between;gap:5px;
+}
+.tutorial-actions div{display:flex;gap:5px}
+.tutorial-actions button{min-height:38px;padding:5px 8px;white-space:nowrap;font-size:clamp(10px,2.9vw,13px);border-radius:9px}
+.tutorial-actions button:disabled{opacity:.42}
+.tutorial-actions [data-action=close]{min-width:35px}
 
 @media(max-width:650px){
   #app{--dock-bottom:max(7px,env(safe-area-inset-bottom));--dock-height:54px}

@@ -1,4 +1,4 @@
-import {collectionProgress} from './sky-model.js?v=0.7.0';
+import {collectionProgress} from './sky-model.js?v=0.7.1';
 
 const ranks = [
   [1, '별지기 입문자'],
