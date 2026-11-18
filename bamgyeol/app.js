@@ -13,7 +13,7 @@ import {DEFAULT_NICKNAME,stories,viewingGuide} from './constellation-guide.js?v=
 import {stampAchievements,observationDays} from './achievements.js?v=0.7.1';
 import {stampDirectionIssue,stampImageIssues} from './stamp-validation.js?v=0.7.1';
 import {localObservationDate,observationZone,timeInputValue} from './observation-time.js?v=0.7.1';
-import {mountViewerTutorial} from './viewer-tutorial.js?v=0.7.1-r2';
+import {mountViewerTutorial} from './viewer-tutorial.js?v=0.7.1-r3';
 let redrawWishes, gpsPosition;
 const brightest=new Map();
 let currentTarget=null, outlineNames={}, artCatalog={};

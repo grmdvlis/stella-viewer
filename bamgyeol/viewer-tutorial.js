@@ -2,10 +2,10 @@ const guides = {
   live: [
     ['[data-mode=live]', '기본 모드에서는 내가 있는 곳의 밤하늘을 관측해요.'],
     ['#sensors', '{sensor} 현위치의 실제 밤하늘을 보기 위해서 꼭 위치 권한과 동작 권한을 허용해 주세요. 화면을 손으로 직접 움직이거나 앱 사용이 누적되면, 기기 방향과 실제 밤하늘 방향이 달라질 수 있어요. {sensor}을 다시 누르면 새로고침돼요.'],
-    ['#location-trigger', '(현위치) 현위치가 확인되면 녹색불로 표시돼요. 탭하면 지금 있는 곳 위경도 좌표를 알 수 있어요.'],
+    ['#location-trigger', '{location} 녹색불이 켜지면 위치가 확인된 상태예요. 이 표시를 탭하면 지금 있는 곳의 위경도 좌표를 알 수 있어요.'],
     ['.search-trigger', '{search} 원하는 별자리가 어디에 있는지 알 수 있어요.'],
-    ['.viewer-zoom', '(+, − 아이콘) 별자리가 너무 크거나 작을 때, 시야각(FOV)을 확대/축소할 수 있어요.'],
-    ['#angles', '(방위각/고도) 현재 바라보는 방향을 Azimuth(방위각)과 Altitude(고도)로 나타내요. 방위각은 북쪽(0˚)부터 시계방향으로 360˚까지, 고도는 지평선(0˚)을 기준으로 −90˚부터 90˚까지예요.'],
+    ['.viewer-zoom', '{zoom} 별자리가 너무 크거나 작을 때, 두 버튼으로 시야각(FOV)을 조절할 수 있어요.'],
+    ['#angles', '{angles} 현재 바라보는 방향을 Azimuth(방위각)와 Altitude(고도)로 나타내요. 방위각은 북쪽(0°)부터 시계 방향으로 360°까지, 고도는 지평선(0°)을 기준으로 −90°부터 90°까지예요.'],
   ],
   custom: [
     ['[data-mode=custom]', '지정 모드에서는 내가 있는 곳이 아닌, 임의의 지구상 어딘가의 밤하늘을 관측해요.'],
@@ -45,14 +45,17 @@ export function mountViewerTutorial(app,getMode){
     const root=app.getBoundingClientRect();
     const height=dock.getBoundingClientRect().top-root.top-3;
     cover.style.height=height+'px';
-    const box=app.querySelector(steps[step][0]).getBoundingClientRect();
+    const target=steps[step][0];
+    const box=app.querySelector(target).getBoundingClientRect();
     const top=box.top-root.top;
+    // Keep the navigation above the entire angle readout even when viewport insets change.
+    controls.style.bottom=target==='#angles'?Math.max(20,height-top+12)+'px':'';
     Object.assign(spotlight.style,{
       left:Math.max(0,box.left-root.left-4)+'px',top:Math.max(0,top-4)+'px',
       width:box.width+8+'px',height:box.height+8+'px',
     });
     const description=copy.offsetHeight;
-    const bottomLimit=height-controls.offsetHeight-14;
+    const bottomLimit=controls.offsetTop-10;
     const above=top-description-15;
     const below=top+box.height+16;
     const ideal=top>height/2&&above>=12?above:below+description<=bottomLimit?below:above;
@@ -60,8 +63,14 @@ export function mountViewerTutorial(app,getMode){
   }
   function render(){
     const icon=selector=>app.querySelector(selector)?.outerHTML??'';
+    const zoomIcons=['#zoom-in','#zoom-out'].map(selector=>
+      `<span class="tutorial-zoom-icon">${app.querySelector(selector).textContent}</span>`
+    ).join('');
     copy.querySelector('p').innerHTML=steps[step][1]
-      .replaceAll('{sensor}',icon('#sensors svg')).replaceAll('{search}',icon('.search-trigger svg')).replaceAll('{time}',icon('#time svg'));
+      .replaceAll('{sensor}',icon('#sensors svg')).replaceAll('{search}',icon('.search-trigger svg')).replaceAll('{time}',icon('#time svg'))
+      .replace('{location}','<span class="tutorial-location"><span class="dot" aria-hidden="true"></span>현위치</span>')
+      .replace('{zoom}',`<span class="tutorial-zoom-icons">${zoomIcons}</span>`)
+      .replace('{angles}','<span class="tutorial-angles">AZ / ALT</span>');
     previous.disabled=step===0;
     layout();
   }
