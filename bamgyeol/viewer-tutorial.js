@@ -1,15 +1,15 @@
 const guides = {
   live: [
     ['[data-mode=live]', '기본 모드에서는 내가 있는 곳의 밤하늘을 관측해요.'],
-    ['#sensors', '{sensor} 현위치의 실제 밤하늘을 보기 위해서 꼭 위치 권한과 동작 권한을 허용해 주세요. 화면을 손으로 직접 움직이거나 앱 사용이 누적되면, 기기 방향과 실제 밤하늘 방향이 달라질 수 있어요. {sensor}을 다시 누르면 새로고침돼요.'],
-    ['#location-trigger', '{location} 녹색불이 켜지면 위치가 확인된 상태예요. 이 표시를 탭하면 지금 있는 곳의 위경도 좌표를 알 수 있어요.'],
+    ['#sensors', '실제 밤하늘을 보기 위해서 꼭 <strong>위치 권한</strong>과 {sensor} <strong>동작 권한</strong>을 허용해 주세요.<br>화면을 손으로 직접 드래그하거나 앱 사용이 누적되면,<br>기기 방향과 실제 밤하늘 방향이 달라질 수 있어요. {sensor}을 다시 누르면 새로고침돼요.'],
+    ['#location-trigger', '{location} 녹색불이 켜지면 위치가 확인된 상태예요.<br>이 표시를 탭하면 지금 있는 곳의 위경도 좌표를 볼 수 있어요.'],
     ['.search-trigger', '{search} 원하는 별자리가 어디에 있는지 알 수 있어요.'],
-    ['.viewer-zoom', '{zoom} 별자리가 너무 크거나 작을 때, 두 버튼으로 시야각(FOV)을 조절할 수 있어요.'],
-    ['#angles', '{angles} 현재 바라보는 방향을 Azimuth(방위각)와 Altitude(고도)로 나타내요. 방위각은 북쪽(0°)부터 시계 방향으로 360°까지, 고도는 지평선(0°)을 기준으로 −90°부터 90°까지예요.'],
+    ['.viewer-zoom', '별자리가 너무 크거나 작다면, {zoom} 두 버튼으로 시야각(FOV)을 조절해 봐요.'],
+    ['#angles', '{angles}<br>현재 바라보는 방향을 Azimuth(방위각)와 Altitude(고도)로 나타내요.<br>방위각은 북쪽(0°)부터 시계 방향으로 360°까지,<br>고도는 지평선(0°)을 기준으로 −90°부터 90°까지예요.'],
   ],
   custom: [
     ['[data-mode=custom]', '지정 모드에서는 내가 있는 곳이 아닌, 임의의 지구상 어딘가의 밤하늘을 관측해요.'],
-    ['[data-mode=custom]', '밤하늘이 궁금한 위치를 세계지도 위에 찍거나, 위경도 좌표를 직접 입력하세요. ‘지정 모드’를 누르면 위치를 새로 지정할 수 있어요. 국가나 도시명을 입력하는 기능도 준비 중이에요.'],
+    ['[data-mode=custom]', '보고 싶은 곳을 세계지도 위에 찍거나, 위경도 좌표를 직접 입력하세요.<br>‘지정 모드’를 눌러 위치를 새로 지정할 수 있어요.<br>국가나 도시명을 입력하는 기능도 준비 중이에요.'],
     ['.aim', '지정 모드에서는 내 기기의 동작 센서를 이용할 수 없어요. 화면을 손으로 직접 움직이면서 가상의 밤하늘을 상상해보세요.'],
     ['#time', '{time} 원하는 시간대의 밤하늘을 볼 수 있어요.'],
   ],
@@ -103,7 +103,7 @@ export function mountViewerTutorial(app,getMode){
       frog=document.createElement('img');
       frog.className='tutorial-frog';
       frog.alt='검은 선글라스를 쓴 왹져 개구리';
-      frog.src='assets/tutorial-frog.webp?v=0.7.3';
+      frog.src='assets/tutorial-frog.webp?v=0.7.4';
       frog.addEventListener('load',layout);
       cover.prepend(frog);
     }

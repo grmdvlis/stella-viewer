@@ -1,5 +1,5 @@
-import {DEFAULT_NICKNAME} from './constellation-guide.js?v=0.7.3';
-import {community} from './community.js?v=0.7.3';
+import {DEFAULT_NICKNAME} from './constellation-guide.js?v=0.7.4';
+import {community} from './community.js?v=0.7.4';
 const SAMPLES = {
   Cas:[{id:'cas-1',author:'새벽별',text:'좋아하는 일을 오래, 내 속도로 할 수 있기를.',count:0},{id:'cas-2',author:'하늘산책',text:'오랜만에 만나는 친구와 저녁 산책을 할 수 있기를.',count:0}],
   Ori:[{id:'ori-1',author:'겨울빛',text:'내일의 나에게 오늘보다 조금 더 다정할 수 있기를.',count:0}],
@@ -59,7 +59,7 @@ export function mountWishes(root,stars,popup,close,figure,previewAd,getRank) {
     if(publishing)return publishing;
     publishing=(async()=>{
       const pending=Object.entries(loadState(state).posts).flatMap(([group,items])=>
-        items.filter(item=>item.pendingShare).map(item=>({group,item})));
+        items.filter(item=>item.pendingShare&&!item.private).map(item=>({group,item})));
       for(const {group,item} of pending){
         try{
           const {id}=await community('publish',{group,localKey:item.id,author:item.author,rank:item.rank,text:item.text});
@@ -101,6 +101,9 @@ export function mountWishes(root,stars,popup,close,figure,previewAd,getRank) {
   const draw=()=>{
     const c=stars[selected], entries=entriesFor(c.id), wish=entries[post];
     const isLocal=wish?.id.startsWith('local-');
+    const privateWish=isLocal&&(wish.private||(!wish.sharedId&&!wish.pendingShare));
+    const visibility=privateWish?'<small class="wish-visibility">나만 보기</small>':
+      isLocal&&wish.pendingShare?'<small class="wish-visibility">공개 대기 중 · 이 기기에 저장했어요</small>':'';
     const voted=wish?.remote?wish.voted:!!state.voted[wish?.id];
     garland.innerHTML=Array.from({length:11},(_,i)=>{
         const offset=i-5, s=stars[wrap(selected+offset,stars.length)];
@@ -108,9 +111,9 @@ export function mountWishes(root,stars,popup,close,figure,previewAd,getRank) {
       }).join('');
     board.innerHTML=`<article class="wish-card" aria-label="${escape(c.name)} 소원"><div class="wish-card-heading"><div><small>${selected+1} / ${stars.length}</small><h2 tabindex="-1">${escape(c.name)}</h2></div><small>${entries.length?'소원 '+entries.length+'개':'첫 소원을 기다려요'}</small><button data-action="new">+ 소원 남기기</button></div>
       ${figure(c)}
-      <div class="wish-content" aria-live="polite">${wish?`<div class="wish-profile"><span class="wish-avatar">${wish.avatar?'<img alt="" src="'+escape(wish.avatar)+'">':'✦'}</span><strong>${escape(wish.author)}</strong>${wish.rank?`<small class="wish-rank">${escape(wish.rank)}</small>`:''}${!wish.remote&&!isLocal?'<small>예시 소원</small>':''}</div><p>${escape(wish.text)}</p>${isLocal&&!wish.sharedId?(wish.pendingShare?'<small>공개 대기 중 · 이 기기에 저장했어요.</small>':'<button type="button" data-action="share">이 소원 공개하기</button>'):''}`:'<p>이 별자리에 첫 소원을 남겨보세요.</p>'}</div>
+      <div class="wish-content" aria-live="polite">${wish?`<div class="wish-profile"><span class="wish-avatar">${wish.avatar?'<img alt="" src="'+escape(wish.avatar)+'">':'✦'}</span><strong>${escape(wish.author)}</strong>${wish.rank?`<small class="wish-rank">${escape(wish.rank)}</small>`:''}${!wish.remote&&!isLocal?'<small>예시 소원</small>':''}${visibility}</div><p>${escape(wish.text)}</p>`:'<p>이 별자리에 첫 소원을 남겨보세요.</p>'}</div>
       <footer><button data-action="prev" aria-label="이전 소원" ${entries.length<2?'disabled':''}>◀</button>
-      <button data-action="vote" aria-pressed="${voted}" ${wish?'':'disabled'}><small>이 소원 함께 빌기</small><strong>${wish?wish.count+Number(!wish.remote&&voted):0}</strong></button>
+      <button data-action="vote" aria-pressed="${!privateWish&&voted}" ${wish&&!privateWish?'':'disabled'}><small>이 소원 함께 빌기</small><strong>${wish&&!privateWish?wish.count+Number(!wish.remote&&voted):0}</strong></button>
       <button data-action="next" aria-label="다음 소원" ${entries.length<2?'disabled':''}>▶</button></footer></article>
       ${cursors.get(c.id)?'<button type="button" class="wish-older" data-action="older">이전 공개 소원 더 보기</button>':''}
       <p class="wish-note" role="status"></p>`;
@@ -149,42 +152,31 @@ export function mountWishes(root,stars,popup,close,figure,previewAd,getRank) {
       const saved=save();draw();root.querySelector('[data-action="vote"]').focus();
       if(!saved)root.querySelector('.wish-note').textContent='저장할 수 없어 새로고침하면 변경이 사라져요.';
     }
-    if(action==='share'){
-      const id=entries[post].id;
-      popup('<h2>이 소원을 공개할까요?</h2><p>이전에 이 기기에만 저장했던 소원이에요. 공개하면 다른 기기에서도 작성자 닉네임과 글을 볼 수 있어요.</p><button type="button" class="primary" id="publish-old-wish">공개하기</button>');
-      document.querySelector('#publish-old-wish').onclick=async()=>{
-        state=loadState(state);
-        const item=state.posts[c.id]?.find(w=>w.id===id);
-        if(!item)return;
-        item.pendingShare=true;
-        if(!save()){delete item.pendingShare;return}
-        close();draw();
-        await flushPending();
-        draw();
-      };
-    }
     if(action==='new')composeWish(c);
   };
-  function composeWish(c,draft='',error=''){
-    popup(`<h2>${escape(c.name)}에 소원 남기기</h2><form id="wish-form"><label>소원<textarea rows="4" maxlength="240" required></textarea></label><small>5초 광고 미리보기 후 닉네임과 소원이 공개돼요. 연결이 끊겨 있으면 기기에 먼저 저장해요.</small><button class="primary">소원 남기기</button><small role="status"></small></form>`);
+  function composeWish(c,draft='',error='',privateWish=false){
+    popup(`<h2>${escape(c.name)}에 소원 남기기</h2><form id="wish-form"><label>소원<textarea rows="4" maxlength="240" required></textarea></label><label class="wish-privacy"><input type="checkbox" name="privateWish">이 소원은 나만 보기</label><small>기본 공개 · 나만 보기 소원은 이 브라우저에만 저장돼요.</small><button class="primary">소원 남기기</button><small role="status"></small></form>`);
     const form=document.querySelector('#wish-form');
     form.querySelector('textarea').value=draft;
     form.querySelector('[role=status]').textContent=error;
+    form.elements.privateWish.checked=privateWish;
     form.onsubmit=async event=>{
       event.preventDefault();
       const text=form.querySelector('textarea').value.trim();
       if(!text||!form.isConnected)return;
-      await previewAd('별자리로 소원 보내는 중…');
+      const privateWish=form.elements.privateWish.checked;
+      await previewAd(privateWish?'소원을 보관하는 중…':'별자리로 소원 보내는 중…');
       let author=DEFAULT_NICKNAME,avatar='';
       try{author=localStorage.getItem('nickname')?.trim()||author;avatar=localStorage.getItem('avatar')||''}catch{}
       if(!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(avatar))avatar='';
       const rank=await getRank();
       state=loadState(state);
       const entries=state.posts[c.id] ||= [];
-      entries.unshift({id:'local-'+crypto.randomUUID(),author,avatar,rank,text,count:0,pendingShare:true});
-      if(!save()){entries.shift();composeWish(c,text,'저장 공간을 확인해주세요.');return}
+      entries.unshift({id:'local-'+crypto.randomUUID(),author,avatar,rank,text,count:0,...(privateWish?{private:true}:{pendingShare:true})});
+      if(!save()){entries.shift();composeWish(c,text,'저장 공간을 확인해주세요.',privateWish);return}
       selected=stars.indexOf(c);
       post=0;close();draw();root.querySelector('[data-action="new"]').focus();
+      if(privateWish)return;
       await flushPending();
       if(stars[selected].id===c.id)draw();
     };

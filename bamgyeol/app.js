@@ -1,22 +1,22 @@
-import {mountConstellationSearch,clampZoom,zoomFov} from './viewer-navigation.js?v=0.7.3';
-import {constellationDiagram} from './constellation-art.js?v=0.7.3';
-import {openDialogWithoutInputFocus} from './modal-focus.js?v=0.7.3';
-import {horizontal,cameraPose,manualAngles,wrap} from './astro.js?v=0.7.3';
-import {prepareStars,prepareConstellations,collectionProgress,shouldDisplayStar} from './sky-model.js?v=0.7.3';
-import {createSkyRenderer} from './sky-renderer.js?v=0.7.3';
-import {OrientationFilter,ViewHint,quaternion} from './orientation.js?v=0.7.3';
-import {formatViewTime,currentCity} from './viewer-ui.js?v=0.7.3';
-import {objectInfo,constellationInfo,constellationEmoji} from './details-ui.js?v=0.7.3';
-import {mountWishes} from './wishes.js?v=0.7.3';
-import {mountWishEntrance} from './wish-entrance.js?v=0.7.3';
-import {outlineStars} from './sky-details.js?v=0.7.3';
-import {DEFAULT_NICKNAME,stories,viewingGuide} from './constellation-guide.js?v=0.7.3';
-import {stampAchievements,observationDays} from './achievements.js?v=0.7.3';
-import {stampDirectionIssue,stampImageIssues} from './stamp-validation.js?v=0.7.3';
-import {localObservationDate,observationZone,timeInputValue} from './observation-time.js?v=0.7.3';
-import {mountViewerTutorial} from './viewer-tutorial.js?v=0.7.3';
-import {community} from './community.js?v=0.7.3';
-import {mountMore,readPreference,storePreference} from './more.js?v=0.7.3';
+import {mountConstellationSearch,clampZoom,zoomFov} from './viewer-navigation.js?v=0.7.4';
+import {constellationDiagram} from './constellation-art.js?v=0.7.4';
+import {openDialogWithoutInputFocus} from './modal-focus.js?v=0.7.4';
+import {horizontal,cameraPose,manualAngles,wrap} from './astro.js?v=0.7.4';
+import {prepareStars,prepareConstellations,collectionProgress,shouldDisplayStar} from './sky-model.js?v=0.7.4';
+import {createSkyRenderer} from './sky-renderer.js?v=0.7.4';
+import {OrientationFilter,ViewHint,quaternion} from './orientation.js?v=0.7.4';
+import {formatViewTime,currentCity} from './viewer-ui.js?v=0.7.4';
+import {objectInfo,constellationInfo,constellationEmoji} from './details-ui.js?v=0.7.4';
+import {mountWishes} from './wishes.js?v=0.7.4';
+import {mountWishEntrance} from './wish-entrance.js?v=0.7.4';
+import {outlineStars} from './sky-details.js?v=0.7.4';
+import {DEFAULT_NICKNAME,stories,viewingGuide} from './constellation-guide.js?v=0.7.4';
+import {stampAchievements,observationDays} from './achievements.js?v=0.7.4';
+import {stampDirectionIssue,stampImageIssues} from './stamp-validation.js?v=0.7.4';
+import {localObservationDate,observationZone,timeInputValue} from './observation-time.js?v=0.7.4';
+import {mountViewerTutorial} from './viewer-tutorial.js?v=0.7.4';
+import {community,identifyBrowser} from './community.js?v=0.7.4';
+import {mountMore,readPreference,storePreference} from './more.js?v=0.7.4';
 let redrawWishes, gpsPosition;
 const brightest=new Map();
 let currentTarget=null, outlineNames={}, artCatalog={};
@@ -306,7 +306,6 @@ function capture(c){
   };
 }
 async function compress(blob){const bitmap=await createImageBitmap(blob),scale=Math.min(1,1400/Math.max(bitmap.width,bitmap.height));const c=document.createElement('canvas');c.width=bitmap.width*scale;c.height=bitmap.height*scale;c.getContext('2d').drawImage(bitmap,0,0,c.width,c.height);bitmap.close();return new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(Error('이미지 변환 실패')),'image/jpeg',.85))}
-try{$('#constellation-art').checked=localStorage.getItem('bamgyeol-constellation-art')!=='off'}catch{}
 
 const avatar=readPreference('avatar','');
 if(avatar){$('#remove-avatar').hidden=false;const img=document.createElement('img');img.src=avatar;$('.profile-photo').prepend(img)}
@@ -338,6 +337,7 @@ async function syncProfile(){
   try{
     while(syncQueued){
       syncQueued=false;
+      await identifyBrowser();
       const photos=await allPhotos().catch(()=>[]);
       await community('account',{profile:await getProfile(photos)});
       await backupPhotos(photos);
@@ -373,11 +373,23 @@ async function backupPhotos(photos){
     storePreference('bamgyeol-backed-stamps',JSON.stringify(uploaded));
   }
 }
-mountMore({toast,getProfile,getPhotos:allPhotos,syncProfile});
-$('#faint').checked=readPreference('bamgyeol-faint','off')==='on';
-$('#deep-sky').checked=readPreference('bamgyeol-deep-sky','on')==='on';
-calibration=Math.max(-180,Math.min(180,Number(readPreference('bamgyeol-calibration','0'))||0));
-$('#calibration').value=String(calibration);
+mountMore({
+  toast,getProfile,getPhotos:allPhotos,syncProfile,
+  constellationName:id=>constellations.find(item=>item.id===id)?.name||id,
+});
+function loadViewSettings(){
+  $('#faint').checked=readPreference('bamgyeol-faint','off')==='on';
+  $('#deep-sky').checked=readPreference('bamgyeol-deep-sky','on')==='on';
+  $('#constellation-art').checked=readPreference('bamgyeol-constellation-art','on')==='on';
+  calibration=Math.max(-180,Math.min(180,Number(readPreference('bamgyeol-calibration','0'))||0));
+  $('#calibration').value=String(calibration);
+}
+loadViewSettings();
+addEventListener('bamgyeol-profile-recovered',()=>{
+  loadViewSettings();
+  if(document.activeElement!==$('#nickname'))$('#nickname').value=readPreference('nickname',DEFAULT_NICKNAME);
+  updateStarCount();
+});
 $('#calibration').onchange=()=>{
   calibration=Math.max(-180,Math.min(180,Number($('#calibration').value)||0));
   $('#calibration').value=String(calibration);
@@ -450,7 +462,7 @@ function wishConstellation(c){
 try {
   const files=['stars.6','constellations','constellations.lines','outline-star-names','constellation-art'];
   const data=await Promise.all(files.map(async name=>{
-    const response=await fetch(`data/${name}.json?v=0.7.3`);
+    const response=await fetch(`data/${name}.json?v=0.7.4`);
     if(!response.ok)throw Error('별 데이터 로딩 실패');
     return response.json();
   }));

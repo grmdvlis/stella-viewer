@@ -1,4 +1,4 @@
-const textureUrl=new URL('./assets/wishes/earth-night.webp?v=0.7.3',import.meta.url);
+const textureUrl=new URL('./assets/wishes/earth-night.webp?v=0.7.4',import.meta.url);
 const rotationPeriod=80000;
 
 export function mountWishEntrance(section){

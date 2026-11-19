@@ -1,6 +1,6 @@
-import {community,deviceId} from './community.js?v=0.7.3';
-import {validNickname} from './community-rules.js?v=0.7.3';
-import {DEFAULT_NICKNAME} from './constellation-guide.js?v=0.7.3';
+import {community,getDeviceId} from './community.js?v=0.7.4';
+import {validNickname} from './community-rules.js?v=0.7.4';
+import {DEFAULT_NICKNAME} from './constellation-guide.js?v=0.7.4';
 
 export function readPreference(key,fallback){
   try{return localStorage.getItem(key)??fallback}catch{return fallback}
@@ -9,13 +9,18 @@ export function storePreference(key,value){
   try{localStorage.setItem(key,value);return true}catch{return false}
 }
 
-export function mountMore({toast,getProfile,getPhotos,syncProfile}){
+export function mountMore({toast,getProfile,getPhotos,syncProfile,constellationName}){
   const $=selector=>document.querySelector(selector);
   const home=$('#more-home'),about=$('#more-about'),admin=$('#more-admin');
   const nickname=$('#nickname');
   const adminForm=$('#owner-form'),adminPassword=$('#owner-secret'),status=$('#owner-status');
   const report=$('#owner-report'),next=$('#owner-next');
   let press,ownerSecret='',offset=0,request=0,photoUrls=[];
+  let accountTable,publicTable;
+  const displayedAccounts=new Set(),displayedPosts=new Set();
+  const timeFormat=new Intl.DateTimeFormat('ko-KR',{
+    timeZone:'Asia/Seoul',dateStyle:'short',timeStyle:'short',
+  });
   function show(page,focus){
     for(const section of [home,about,admin])section.hidden=section!==page;
     $('#more').scrollTop=0;
@@ -27,6 +32,8 @@ export function mountMore({toast,getProfile,getPhotos,syncProfile}){
     adminPassword.value='';
     status.textContent='';
     report.replaceChildren();
+    displayedAccounts.clear();
+    displayedPosts.clear();
     next.hidden=true;
     adminForm.hidden=false;
     photoUrls.forEach(URL.revokeObjectURL);
@@ -79,47 +86,153 @@ export function mountMore({toast,getProfile,getPhotos,syncProfile}){
     node.textContent=text;
     parent.append(node);
   }
-  function details(text,data,parent){
-    const node=document.createElement('details');
-    const summary=document.createElement('summary');
-    summary.textContent=text;
-    const pre=document.createElement('pre');
-    pre.textContent=JSON.stringify(data,null,2);
-    node.append(summary,pre);
-    parent.append(node);
-    return node;
+  function table(parent,label,columns){
+    const scroll=document.createElement('div');
+    scroll.className='owner-table-scroll';
+    scroll.tabIndex=0;
+    scroll.setAttribute('role','region');
+    scroll.setAttribute('aria-label',label);
+    const element=document.createElement('table');
+    element.className='owner-table';
+    element.createCaption().textContent=label;
+    const header=element.createTHead().insertRow();
+    for(const column of columns){
+      const th=document.createElement('th');
+      th.scope='col';
+      th.textContent=column;
+      header.append(th);
+    }
+    const body=element.createTBody();
+    scroll.append(element);
+    parent.append(scroll);
+    return body;
+  }
+  function row(body,values){
+    const item=body.insertRow();
+    for(const value of values){
+      const cell=item.insertCell();
+      if(value instanceof Node)cell.append(value);
+      else cell.textContent=value??'—';
+    }
+    return item;
+  }
+  function expandable(label){
+    const details=document.createElement('details');
+    const title=document.createElement('summary');
+    title.textContent=label;
+    details.append(title);
+    return details;
+  }
+  function time(value){
+    const date=new Date(value);
+    return value&&Number.isFinite(date.getTime())?timeFormat.format(date):'—';
+  }
+  function identifier(id){
+    if(!id)return '—';
+    const details=expandable(id.slice(0,10)+'…');
+    const code=document.createElement('code');
+    code.textContent=id;
+    details.append(code);
+    return details;
+  }
+  function settings(profile){
+    const details=expandable('설정 보기');
+    const grid=table(details,'뷰어 설정',['항목','값']);
+    const settings=profile.settings;
+    for(const [label,value] of [
+      ['희미한 별',settings.faint],['별자리 배경 그림',settings.artwork],['심원 천체',settings.deepSky],
+    ])row(grid,[label,value?'켜짐':'꺼짐']);
+    row(grid,['센서 방위 보정',settings.calibration+'°']);
+    return details;
+  }
+  function badges(names){
+    if(!names.length)return '0개';
+    const details=expandable(names.length+'개');
+    const list=document.createElement('ul');
+    for(const name of names){
+      const item=document.createElement('li');
+      item.textContent=name;
+      list.append(item);
+    }
+    details.append(list);
+    return details;
+  }
+  function stampPhotos(account){
+    if(!account.stamps.length)return '0개';
+    const details=expandable(account.stamps.length+'개 · 사진');
+    for(const stamp of account.stamps){
+      const button=document.createElement('button');
+      button.type='button';
+      button.textContent=constellationName(stamp);
+      button.onclick=async()=>{
+        button.disabled=true;
+        try{
+          const {jpeg,date}=await community('adminPhoto',{secret:ownerSecret,id:account.id,stamp});
+          if(!button.isConnected)return;
+          const image=document.createElement('img');
+          image.src='data:image/jpeg;base64,'+jpeg;
+          image.alt=constellationName(stamp)+' · '+time(date);
+          button.replaceWith(image);
+        }catch(error){
+          if(!button.isConnected)return;
+          button.textContent=constellationName(stamp)+(error.message==='missing'?' · 백업 없음':' · 다시 시도');
+          button.disabled=error.message==='missing';
+        }
+      };
+      details.append(button);
+    }
+    return details;
+  }
+  function showWishes(posts,body,seen){
+    for(const post of posts){
+      if(seen.has(post.id))continue;
+      seen.add(post.id);
+      row(body,[constellationName(post.group),post.author,post.text,time(post.createdAt),post.count]);
+    }
+  }
+  const wishColumns=['별자리','작성자','소원','작성 시각 (한국)','함께 빌기'];
+  function wishList(account){
+    if(!account.wishCount)return '0개';
+    const details=expandable(account.wishCount+'개 · 소원 보기');
+    const body=table(details,'이 계정의 공개 소원',wishColumns);
+    const seen=new Set();
+    const more=document.createElement('button');
+    more.type='button';
+    more.textContent='소원 불러오기';
+    details.append(more);
+    let start=0;
+    more.onclick=async()=>{
+      more.disabled=true;
+      try{
+        const page=await community('adminWishes',{secret:ownerSecret,id:account.id,offset:start});
+        if(!more.isConnected)return;
+        showWishes(page.posts,body,seen);
+        start=page.next;
+        more.hidden=start===null;
+        more.textContent='다음 공개 소원';
+      }catch{more.textContent='다시 시도'}
+      finally{more.disabled=false}
+    };
+    details.addEventListener('toggle',()=>{
+      if(details.open&&!seen.size&&!more.hidden&&!more.disabled)more.click();
+    });
+    return details;
   }
   function showAccounts(accounts){
-    const group=details('기기 계정 '+accounts.length+'개',accounts,report);
     for(const account of accounts){
-      if(!account.stamps.length)continue;
-      const list=document.createElement('fieldset');
-      const label=document.createElement('legend');
-      label.textContent=account.nickname+' · '+account.id;
-      list.append(label);
-      for(const stamp of account.stamps){
-        const button=document.createElement('button');
-        button.type='button';
-        button.textContent=stamp+' 사진';
-        button.onclick=async()=>{
-          const current=request;
-          button.disabled=true;
-          try{
-            const {jpeg,date}=await community('adminPhoto',{secret:ownerSecret,id:account.id,stamp});
-            if(current!==request||!button.isConnected)return;
-            const image=document.createElement('img');
-            image.src='data:image/jpeg;base64,'+jpeg;
-            image.alt=stamp+' 도장 · '+date;
-            button.replaceWith(image);
-          }catch(error){
-            if(!button.isConnected)return;
-            button.textContent=error.message==='missing'?stamp+' · 백업 없음':stamp+' · 다시 시도';
-            button.disabled=error.message==='missing';
-          }
-        };
-        list.append(button);
+      if(displayedAccounts.has(account.id))continue;
+      displayedAccounts.add(account.id);
+      const name=document.createElement('span');
+      name.textContent=account.nickname;
+      if(account.nickname!==DEFAULT_NICKNAME&&account.number){
+        const original=document.createElement('small');
+        original.textContent=DEFAULT_NICKNAME+' #'+account.number;
+        name.append(original);
       }
-      group.append(list);
+      row(accountTable,[
+        account.number?'#'+account.number:'—',name,identifier(account.id),time(account.updatedAt),
+        wishList(account),stampPhotos(account),badges(account.badges),settings(account),
+      ]);
     }
   }
   async function readReport(start){
@@ -127,32 +240,34 @@ export function mountMore({toast,getProfile,getPhotos,syncProfile}){
     status.textContent='데이터 확인 중…';
     next.disabled=true;
     try{
-      const {accounts,posts,next:nextOffset}=await community('admin',{secret:ownerSecret,offset:start});
+      const {accounts,posts,accountTotal,next:nextOffset}=await community('admin',{secret:ownerSecret,offset:start});
       if(id!==request)return;
       if(!start){
-        const [profile,photos,localId]=await Promise.all([getProfile(),getPhotos().catch(()=>[]),deviceId]);
+        const [profile,photos,localId]=await Promise.all([getProfile(),getPhotos().catch(()=>[]),getDeviceId().catch(()=>null)]);
         if(id!==request)return;
         adminForm.hidden=true;
         heading('이 브라우저의 데이터',report);
-        details('기기 식별 ID · 설정 · 도장 · 뱃지',{id:localId,...profile},report);
-        let local={};
-        try{local=JSON.parse(readPreference('bamgyeol-wishes','{}'),(key,value)=>key==='avatar'?undefined:value)}catch{}
-        details('이 기기에 저장된 소원과 함께 빌기',local,report);
-        const files=document.createElement('ul');
+        const browser=table(report,'브라우저 프로필',['닉네임','식별 ID','도장 수','뱃지','설정']);
+        row(browser,[profile.nickname,identifier(localId),profile.stamps.length,badges(profile.badges),settings(profile)]);
+        const files=photos.length?table(report,'이 브라우저의 도장 사진',['별자리','촬영 시각 (한국)','파일']):null;
         for(const photo of photos){
-          const item=document.createElement('li'),link=document.createElement('a');
+          const link=document.createElement('a');
           link.href=URL.createObjectURL(photo.blob);
           photoUrls.push(link.href);
           link.download=photo.id+'.jpg';
-          link.textContent=photo.id+' · '+photo.date;
-          item.append(link);
-          files.append(item);
+          link.textContent='내려받기';
+          row(files,[constellationName(photo.id),time(photo.date),link]);
         }
-        report.append(files);
         heading('공용 저장소',report);
+        accountTable=table(report,'전체 기기 계정 · '+accountTotal+'개',[
+          '계정 번호','닉네임','식별 ID','마지막 동기화 (한국)','공개 소원','도장','뱃지','설정',
+        ]);
+        publicTable=table(report,'공개 소원',wishColumns);
+        if(!accounts.length)row(accountTable,['등록된 계정이 없어요.']);
+        if(!posts.length)row(publicTable,['공개 소원이 없어요.']);
       }
       showAccounts(accounts);
-      details('공개 소원 '+posts.length+'개',posts,report);
+      showWishes(posts,publicTable,displayedPosts);
       offset=nextOffset;
       next.hidden=offset===null;
       status.textContent='';

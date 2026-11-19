@@ -144,6 +144,8 @@ dialog.wide-details{width:720px}
 .wish-note{margin:0;text-align:center}
 .wish-older{align-self:center;font-size:11px}
 #wish-form textarea{resize:vertical;color:inherit;background:#0a1424;border:1px solid #7089a66b;border-radius:10px;padding:10px;font:inherit}
+#wish-form .wish-privacy{display:flex;align-items:center;gap:8px}
+#wish-form .wish-privacy input{width:auto;margin:0}
 #wishes{overflow-y:auto;overscroll-behavior:contain;padding:0 3px 8px;scrollbar-width:thin}
 @media(max-height:690px){.wish-card{min-height:235px}.wish-content{padding:8px 0}}
 #wishes{overflow-x:hidden}
@@ -167,7 +169,7 @@ dialog.wide-details{width:720px}
 #wish-entrance{
   position:relative;height:100%;isolation:isolate;background:
     linear-gradient(180deg,#070c1770,transparent 32%,transparent 75%,#050a14a8),
-    #080d15 url('assets/wishes/milky-way.webp?v=0.7.3') center / cover no-repeat;
+    #080d15 url('assets/wishes/milky-way.webp?v=0.7.4') center / cover no-repeat;
 }
 #enter-wishes{
   position:absolute;z-index:2;top:calc(max(16px,env(safe-area-inset-top)) + clamp(22px,7dvh,66px));
@@ -331,6 +333,8 @@ body:not(.viewing) #app>header{display:none}
 .more-heading h1{display:flex;align-items:center;gap:9px;margin:0;padding:0}
 .bamgyeol-mark{color:var(--green);font-size:34px;line-height:1}
 #more .settings{max-height:none;overflow:visible}
+#more .profile-photo{position:relative}
+#more .profile-photo img{position:absolute;inset:0;display:block;object-position:center}
 #more [hidden]{display:none!important}
 #nickname-form{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px}
 #nickname-form input{width:100%;max-width:none;min-width:0}
@@ -344,10 +348,20 @@ body:not(.viewing) #app>header{display:none}
 #developer-name{user-select:none;-webkit-touch-callout:none}
 #owner-form{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 #owner-form input{min-width:0;flex:1}
-#owner-report pre{white-space:pre-wrap;overflow-wrap:anywhere;color:#c2d3e4}
-#owner-report fieldset{min-width:0;overflow-wrap:anywhere;margin:8px 0;border:1px solid var(--line)}
-#owner-report fieldset img{display:block;width:min(100%,340px);margin:8px 0}
-#owner-report details{padding:8px 0}
+#more-admin{max-width:1020px}
+.owner-table-scroll{overflow-x:auto;margin:0 0 17px;border:1px solid #41516880;border-radius:10px}
+.owner-table{width:100%;border-collapse:collapse;text-align:left;font-size:12px}
+.owner-table caption{background:#142032;text-align:left;padding:8px 10px;color:var(--green);font-weight:700}
+.owner-table th,.owner-table td{padding:8px 10px;vertical-align:top;border-bottom:1px solid #ffffff1a}
+.owner-table th{background:#142032;white-space:nowrap}
+.owner-table td{min-width:70px;overflow-wrap:anywhere}
+.owner-table tr:nth-child(even){background:#111b2b99}
+.owner-table td small{display:block;color:#a6b5cb}
+.owner-table td summary{cursor:pointer;color:#b4e8d1;white-space:nowrap}
+.owner-table td .owner-table-scroll{min-width:min(350px,72vw);max-width:620px;margin:7px 0 2px}
+.owner-table td code{display:block;max-width:210px;overflow-wrap:anywhere}
+.owner-table td button{margin:5px 4px 0 0;padding:6px 8px}
+.owner-table td img{display:block;width:min(180px,58vw);margin:7px 0;border-radius:6px}
 #stamps .stamp-card-title{font-size:13px}
 #stamps .stamp-card-title h3,#stamps .stamp-card-title .badge{font-size:inherit}
 #stamps .card small{padding-bottom:5px}
@@ -377,6 +391,6 @@ body:not(.viewing) #app>header{display:none}
   #stamps aside{width:81px;gap:3px}
   #stamps aside button{font-size:12px;padding:11px 5px;word-break:keep-all}
   #stamps #gallery{gap:8px;padding-bottom:4px}
-  #stamps .card{min-height:118px;padding:8px}
+  #stamps .card{min-height:144px;padding:8px 8px 15px}
   #stamps .stamp-card-title{font-size:11px}
 }

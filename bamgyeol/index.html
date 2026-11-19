@@ -1,4 +1,4 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-version" content="0.7.3"><meta name="theme-color" content="#070c18"><title>밤결 · 나의 작은 우주</title><link rel="stylesheet" href="style.css?v=0.7.3-r2"></head><body>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="app-version" content="0.7.4"><meta name="theme-color" content="#070c18"><title>밤결 · 나의 작은 우주</title><link rel="stylesheet" href="style.css?v=0.7.4"></head><body>
 <main id="app"><canvas id="sky" aria-label="위치와 시각에 따른 별자리 하늘"></canvas><div class="vignette"></div>
 <header><div class="switch" id="mode"><button class="selected" data-mode="live">기본 모드</button><button data-mode="custom">지정 모드</button></div><button type="button" id="tutorial-help" class="tutorial-help" aria-label="뷰어 사용법 다시 보기" aria-controls="viewer-tutorial" aria-expanded="false">?</button></header>
 <section id="viewer" class="page"><div class="location preview-location"><button id="location-trigger" class="location-trigger" aria-expanded="false" aria-controls="location-details"><span class="dot"></span><span id="location">미리보기 - 서울</span></button><small id="date"></small><button id="location-details" class="location-details" hidden aria-label="위치 정보 팝업 닫기"><small id="location-note"></small><span id="location-city"></span><small class="coordinates" id="location-lat"></small><small class="coordinates" id="location-lon"></small><small>팝업을 누르면 사라집니다</small></button></div><div class="viewer-title"><div class="identified hidden" id="identified"><h1><span id="name"></span><small id="latin"></small><button id="constellation-actions" type="button" aria-label="별자리 메뉴">⋯</button></h1><p id="stamp-hint">꾹 눌러 별자리 메뉴 열기</p></div><div id="viewer-search" class="viewer-search"></div></div><div class="viewer-zoom" role="group" aria-label="하늘 확대 축소"><button id="zoom-in" class="round" aria-label="하늘 확대">+</button><output id="zoom-level" aria-live="polite">1×</output><button id="zoom-out" class="round" aria-label="하늘 축소">−</button></div><div class="aim"><i></i></div><div id="object-label" class="object-label hidden" role="status"><span id="object-name"></span><button id="object-info" type="button" aria-label="천체 정보">i</button><small id="object-english"></small><small id="object-horizon" hidden>지평선 아래</small></div><div id="constellation-menu" class="sky-menu" hidden role="group" aria-label="별자리 동작"><strong></strong><button id="constellation-more" type="button">더보기</button><button id="constellation-stamp" type="button">도장깨기</button></div><div class="viewer-bottom"><button id="time" class="round" aria-label="관측 시각 설정"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg></button><div class="hint hint-hidden"><span>✧</span><p>별자리에 시선을 맞춰보세요<small>화면을 드래그하거나 휴대폰을 움직여 탐색</small></p></div><button id="sensors" class="round" aria-label="위치와 센서 켜기"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg></button></div><div class="telemetry"><span id="angles"></span><span>FOV <b id="fov">70°</b></span></div></section>
@@ -42,13 +42,13 @@
     <p>밤을 걷다가 문득 궁금해진 별. 밤결은 위치와 시간, 바라보는 방향으로 당신의 작은 우주를 찾는 별자리 뷰어입니다.</p>
     <p>밝기(겉보기 등급)를 기준으로 별 크기와 빛번짐을 표현합니다. 거리가 멀다고 어둡다고 단정할 수 없어 거리만으로 크기를 조정하지 않습니다. 대기 굴절·지형·광공해는 현재 반영하지 않습니다. 태양·달·행성 이미지는 구별을 위한 일러스트이며 실제 크기나 표면 위상을 나타내지는 않습니다.</p>
     <h2>데이터 출처</h2>
-    <p>밤결 0.7.3 · 웹 프로토타입</p>
+    <p>밤결 0.7.4 · 웹 프로토타입</p>
     <p>별 좌표, 연결선과 항성 이름은 Olaf Frohn의 d3-celestial (BSD-3-Clause)에서 가져왔습니다. 뱀자리의 두 영역을 한 개로 합쳐 총 88개를 표시합니다.</p>
     <ul><li><a href="https://github.com/ofrohn/d3-celestial" target="_blank" rel="noopener">원본 데이터 및 라이선스 ↗</a></li><li><a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">행성 위치 계산 · Astronomy Engine 2.1.19 (MIT) ↗</a></li><li><a href="https://github.com/photostructure/tz-lookup" target="_blank" rel="noopener">지정 위치의 시간대 · PhotoStructure tz-lookup (CC0) ↗</a></li></ul>
     <p>도시명은 통계청 통계지리정보서비스가 제공한 2013 행정구역 경계를 기기 안에서 조회합니다. 경계 부근·변경된 행정구역·해외에서는 도시명이 부정확하거나 확인되지 않을 수 있습니다.</p>
     <h2>저장되는 데이터</h2>
     <p>같은 브라우저에서는 기기 식별 ID, 닉네임, 프로필 사진과 설정, 도장과 뱃지, 소원 기록이 유지됩니다. 브라우저 데이터 삭제에 대비해 도장 사진을 내려받아 보관할 수 있어요.</p>
-    <p>공개 소원의 본문·닉네임·등급과 함께 빌기 수는 다른 기기에도 표시됩니다. 기기 식별 ID·닉네임·설정·도장 목록·뱃지와 새 도장 사진 백업은 개발자 인증이 필요한 영역에 저장됩니다. 프로필 사진과 도장 촬영 위치의 위경도는 이 기기에 저장됩니다.</p>
+    <p>공개 소원의 본문·닉네임·등급과 함께 빌기 수는 다른 기기에도 표시됩니다. ‘이 소원은 나만 보기’로 작성한 글은 해당 브라우저에만 저장됩니다. 기기 식별 ID·닉네임·설정·도장 목록·뱃지와 새 도장 사진 백업은 개발자 인증이 필요한 영역에 저장됩니다. 프로필 사진과 도장 촬영 위치의 위경도는 이 기기에 저장됩니다.</p>
   </section>
   <section id="more-admin" class="more-subpage" hidden>
     <button id="owner-back" class="more-back" type="button" aria-label="밤결 자세히 보기로 돌아가기">‹</button>
@@ -59,4 +59,4 @@
     <button id="owner-next" type="button" hidden>다음 데이터 보기</button>
   </section>
 </section>
-<nav id="dock" aria-label="주 메뉴"></nav><div id="toast" role="status"></div></main><dialog id="modal"><div id="modal-content"></div></dialog><script type="module" src="app.js?v=0.7.3"></script></body></html>
+<nav id="dock" aria-label="주 메뉴"></nav><div id="toast" role="status"></div></main><dialog id="modal"><div id="modal-content"></div></dialog><script type="module" src="app.js?v=0.7.4"></script></body></html>

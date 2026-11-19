@@ -2,15 +2,19 @@
 
 스마트폰의 위치·방위·기울기와 시각을 기반으로 별자리를 탐색하는 웹앱입니다. v0.7.3부터 공개 소원과 개발자 전용 데이터 조회에는 Vercel 함수와 Upstash Redis를 사용합니다.
 
-## 0.7.3 배포
+## 0.7.4 배포
 
-1. `outputs/bamgyeol-0.7.3.zip`을 풀고 그 안의 `bamgyeol` 폴더 내용을 기존 GitHub/Vercel 프로젝트에 반영합니다. Vercel Root Directory에는 `api/`, `data/`, `package.json`, `vercel.json`이 함께 있어야 합니다. 빌드 명령은 `npm run build`, 정적 출력 경로는 `dist`입니다.
+1. `outputs/bamgyeol-0.7.4.zip`을 풀고 그 안의 `bamgyeol` 폴더 내용을 기존 GitHub/Vercel 프로젝트에 반영합니다. Vercel Root Directory에는 `api/`, `data/`, `package.json`, `vercel.json`이 함께 있어야 합니다. 빌드 명령은 `npm run build`, 정적 출력 경로는 `dist`입니다.
 2. Upstash Redis에서 HTTPS REST URL과 표준 REST 토큰을 발급받고 Vercel의 서버 환경 변수 `UPSTASH_REDIS_REST_URL`과 `UPSTASH_REDIS_REST_TOKEN`에 설정합니다. `BAMGYEOL_ADMIN_SECRET`에는 본인만 아는 24자 이상의 무작위 키를 사용합니다. 예를 들어 PowerShell에서 `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`로 만들 수 있습니다.
 3. 환경 변수를 넣은 뒤 새로 배포합니다. 개발자 화면은 앱의 더보기 → 밤결 자세히 보기에서 **Inseon Lee**를 길게 누르거나 `Alt+Shift+D`를 눌러 열고, 서버에 설정한 개발자 키를 입력합니다.
 
-환경 변수가 비어 있으면 기기 내 저장을 계속하고 새 소원은 공개 대기 상태가 됩니다. 지난 버전 소원은 작성한 브라우저에서 해당 글의 **이 소원 공개하기**를 눌러 공개할 수 있습니다. 기존 도장 사진은 더보기에서 **기존 도장 사진 백업**을 선택한 경우에 서버에 복사됩니다. 같은 브라우저와 사이트 주소에서 기기 식별 ID와 설정이 유지됩니다.
+환경 변수가 비어 있으면 기기 내 저장을 계속하고 기본 공개로 작성한 새 소원은 공개 대기 상태가 됩니다. **이 소원은 나만 보기**를 체크한 글과 기존 비공개 글은 작성한 브라우저에만 남습니다. 기존 도장 사진은 더보기에서 **기존 도장 사진 백업**을 선택한 경우에 서버에 복사됩니다. 같은 브라우저와 사이트 주소에서 기기 식별 ID를 유지하고 쿠키를 복구에 사용합니다. 기존 계정의 번호는 보존된 마지막 동기화 시각 순으로 한 번 배정하고, 신규 계정에는 등록 순으로 고정 번호를 부여합니다.
 
 로컬에서는 Node 20 이상에서 `node server.js`를 실행합니다. 공유 기능까지 확인하는 경우 실제 서비스와 분리한 테스트 Upstash 환경 변수를 로컬 프로세스에 설정할 수 있습니다.
+
+### 방문 통계
+
+Vercel 프로젝트의 **Analytics**에서 Web Analytics를 활성화한 뒤 이 빌드가 포함된 커밋을 배포합니다. 공개 주소를 방문하면 Analytics의 **Production**에서 방문자 수와 페이지 조회를 확인할 수 있습니다. Vercel 배포 시 빌드가 HTML 추적 스크립트를 넣으며, 로컬 실행은 집계에서 제외됩니다.
 
 ## 이전 배포 기록 · PC·모바일 통합
 
